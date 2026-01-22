@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تفاصيل المنتج - المتجر الإلكتروني</title>
+    <link rel="stylesheet" href="product.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="buyer.html" class="back-link">
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <i class="fas fa-store"></i>
+                <h1>المتجر الإلكتروني</h1>
+            </div>
+            <a href="buyer.html#cart" class="cart-link">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="cart-count">0</span>
+            </a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <div id="product-detail-page"></div>
+        
+        <div class="loading" id="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>جاري تحميل المنتج...</p>
+        </div>
+        
+        <div class="error" id="error" style="display: none;">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>المنتج غير موجود</h3>
+            <p>قد يكون المنتج قد تم حذفه أو الرابط غير صحيح</p>
+            <a href="buyer.html" class="btn btn-primary">
+                <i class="fas fa-shopping-bag"></i> العودة للتسوق
+            </a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>© 2024 المتجر الإلكتروني. جميع الحقوق محفوظة.</p>
+        </div>
+    </footer>
+
+    <script src="product.js"></script>
+</body>
+</html>

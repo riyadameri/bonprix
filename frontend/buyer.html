@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المتجر الإلكتروني - تسوق الآن</title>
+    <link rel="stylesheet" href="buyer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- شريط التنقل -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="nav-brand">
+                <a href="#" class="logo">
+                    <i class="fas fa-store"></i>
+                    <h1>المتجر الإلكتروني</h1>
+                </a>
+            </div>
+            <div class="nav-links">
+                <a href="#" class="nav-link active"><i class="fas fa-home"></i> الرئيسية</a>
+                <a href="#products" class="nav-link"><i class="fas fa-box"></i> المنتجات</a>
+                <a href="#cart" class="nav-link cart-link">
+                    <i class="fas fa-shopping-cart"></i>
+                    سلة المشتريات
+                    <span class="cart-count">0</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- الهيرو -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h2>تسوق بكل سهولة و أمان</h2>
+                <p>أفضل المنتجات بأفضل الأسعار مع توصيل سريع لجميع ولايات الجزائر</p>
+                <a href="#products" class="btn btn-primary">
+                    <i class="fas fa-shopping-bag"></i> تصفح المنتجات
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- الفئات -->
+    <section class="categories">
+        <div class="container">
+            <h2 class="section-title">تسوق حسب الفئة</h2>
+            <div class="categories-grid">
+                <div class="category-card" onclick="filterByCategory('ملابس')">
+                    <i class="fas fa-tshirt"></i>
+                    <span>ملابس</span>
+                </div>
+                <div class="category-card" onclick="filterByCategory('إلكترونيات')">
+                    <i class="fas fa-laptop"></i>
+                    <span>إلكترونيات</span>
+                </div>
+                <div class="category-card" onclick="filterByCategory('أثاث')">
+                    <i class="fas fa-couch"></i>
+                    <span>أثاث</span>
+                </div>
+                <div class="category-card" onclick="filterByCategory('كتب')">
+                    <i class="fas fa-book"></i>
+                    <span>كتب</span>
+                </div>
+                <div class="category-card" onclick="filterByCategory('ألعاب')">
+                    <i class="fas fa-gamepad"></i>
+                    <span>ألعاب</span>
+                </div>
+                <div class="category-card" onclick="filterByCategory('مواد غذائية')">
+                    <i class="fas fa-utensils"></i>
+                    <span>مواد غذائية</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- المنتجات -->
+    <section id="products" class="products">
+        <div class="container">
+            <div class="products-header">
+                <h2 class="section-title">منتجاتنا</h2>
+                <div class="products-controls">
+                    <div class="search-box">
+                        <input type="text" id="search-products" placeholder="ابحث عن منتج...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <select id="sort-products">
+                        <option value="newest">الأحدث أولاً</option>
+                        <option value="price-low">السعر: من الأقل للأعلى</option>
+                        <option value="price-high">السعر: من الأعلى للأقل</option>
+                        <option value="discount">الأعلى خصماً</option>
+                    </select>
+                </div>
+            </div>
+            <div class="products-grid" id="products-container">
+                <!-- المنتجات تظهر هنا -->
+            </div>
+            <div class="loading-products" id="loading-products">
+                <i class="fas fa-spinner fa-spin"></i>
+                <p>جاري تحميل المنتجات...</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- سلة المشتريات (عائمة) -->
+    <div id="cart" class="cart-sidebar">
+        <div class="cart-header">
+            <h3><i class="fas fa-shopping-cart"></i> سلة المشتريات</h3>
+            <button class="close-cart">&times;</button>
+        </div>
+        <div class="cart-items" id="cart-items">
+            <!-- عناصر السلة تظهر هنا -->
+            <div class="empty-cart" id="empty-cart">
+                <i class="fas fa-shopping-cart"></i>
+                <p>سلة المشتريات فارغة</p>
+                <a href="#products" class="btn btn-outline">تصفح المنتجات</a>
+            </div>
+        </div>
+        <div class="cart-summary" id="cart-summary">
+            <div class="summary-item">
+                <span>المجموع الفرعي:</span>
+                <span id="subtotal">0 دج</span>
+            </div>
+            <div class="summary-item">
+                <span>التوصيل:</span>
+                <span id="shipping">0 دج</span>
+            </div>
+            <div class="summary-item total">
+                <span>المجموع الكلي:</span>
+                <span id="total">0 دج</span>
+            </div>
+            <button class="btn btn-primary btn-block" id="checkout-btn">
+                <i class="fas fa-check-circle"></i> اتمام الطلب
+            </button>
+        </div>
+    </div>
+
+    <!-- نافذة اتمام الطلب -->
+    <div id="checkout-modal" class="modal">
+        <div class="modal-content checkout-modal-content">
+            <span class="close-modal">&times;</span>
+            <h2><i class="fas fa-shopping-bag"></i> اتمام الطلب</h2>
+            <form id="checkout-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="full-name">الاسم الكامل *</label>
+                        <input type="text" id="full-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">رقم الهاتف *</label>
+                        <input type="tel" id="phone" required>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني (اختياري)</label>
+                    <input type="email" id="email">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="wilaya">الولاية *</label>
+                        <select id="wilaya" required>
+                            <option value="">اختر الولاية</option>
+                            <!-- الولايات تضاف هنا -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="shipping-price">سعر التوصيل</label>
+                        <input type="text" id="shipping-price" readonly value="0 دج">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="address">العنوان التفصيلي *</label>
+                    <textarea id="address" rows="3" required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notes">ملاحظات إضافية (اختياري)</label>
+                    <textarea id="notes" rows="2"></textarea>
+                </div>
+                
+                <div class="order-summary">
+                    <h4>ملخص الطلب</h4>
+                    <div id="checkout-summary"></div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-block">
+                        <i class="fas fa-check-circle"></i> تأكيد الطلب
+                    </button>
+                    <button type="button" class="btn btn-secondary btn-block" onclick="closeCheckoutModal()">
+                        <i class="fas fa-times"></i> إلغاء
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- الفوتر -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><i class="fas fa-store"></i> المتجر الإلكتروني</h3>
+                    <p>أفضل منصة للتسوق الإلكتروني في الجزائر</p>
+                </div>
+                <div class="footer-section">
+                    <h4>معلومات الاتصال</h4>
+                    <p><i class="fas fa-phone"></i> 0550-000-000</p>
+                    <p><i class="fas fa-envelope"></i> contact@store.dz</p>
+                </div>
+                <div class="footer-section">
+                    <h4>طرق الدفع</h4>
+                    <p>الدفع عند الاستلام فقط</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 المتجر الإلكتروني. جميع الحقوق محفوظة.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="buyer.js"></script>
+</body>
+</html>
