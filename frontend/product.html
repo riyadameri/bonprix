@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تفاصيل المنتج - المتجر الإلكتروني</title>
+    <title>تفاصيل المنتج - بون بري</title>
     <link rel="stylesheet" href="product.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav class="navbar">
@@ -13,9 +14,12 @@
             <div class="nav-brand">
                 <a href="buyer.html" class="back-link">
                     <i class="fas fa-arrow-right"></i>
+                    <span>العودة</span>
                 </a>
-                <i class="fas fa-store"></i>
-                <h1>المتجر الإلكتروني</h1>
+                <a href="buyer.html" class="logo">
+                    <i class="fas fa-store"></i>
+                    <h1>بون بري</h1>
+                </a>
             </div>
             <a href="buyer.html#cart" class="cart-link">
                 <i class="fas fa-shopping-cart"></i>
@@ -42,9 +46,17 @@
         </div>
     </main>
 
+    <div id="purchase-loading" class="purchase-loading">
+        <i class="fas fa-spinner fa-spin"></i>
+        <p>جاري معالجة طلبك...</p>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+
     <footer class="footer">
         <div class="container">
-            <p>© 2024 المتجر الإلكتروني. جميع الحقوق محفوظة.</p>
+            <p>© 2024 بون بري. جميع الحقوق محفوظة.</p>
         </div>
     </footer>
 

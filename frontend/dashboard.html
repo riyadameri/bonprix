@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>لوحة تحكم البائع - متجر متكامل</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    <style>
+        /* تحسينات سريعة للهواتف */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body.dashboard-mode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            height: auto;
+        }
+        
+        .dashboard-wrapper {
+            padding: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* إصلاح الطول للهواتف */
+        @media (max-width: 768px) {
+            body.dashboard-mode {
+                background: #f5f7fa;
+            }
+            
+            .dashboard-wrapper {
+                padding: 10px;
+            }
+            
+            /* إصلاح للهواتف ذات الشاشات الصغيرة */
+            .stat-number {
+                font-size: 1.2rem !important;
+            }
+            
+            .status-btn {
+                min-height: 44px !important;
+            }
+        }
+        
+        /* تحسين الأداء */
+        * {
+            will-change: transform, opacity;
+        }
+    </style>
+</head>
+<body class="dashboard-mode">
+    <!-- الرسائل العائمة -->
+    <div id="floating-messages"></div>
+    
+    <!-- Loader -->
+    <div class="loader-overlay" id="loader">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <p>جاري التحميل...</p>
+        </div>
+    </div>
+
+    <!-- Sidebar للشاشات الكبيرة -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2><i class="fas fa-store"></i> لوحة التحكم</h2>
+        </div>
+        <div class="sidebar-menu">
+            <a href="#products" class="menu-item active" onclick="switchSection('products')">
+                <i class="fas fa-boxes"></i> المنتجات
+            </a>
+            <a href="#orders" class="menu-item" onclick="switchSection('orders')">
+                <i class="fas fa-shopping-cart"></i> الطلبات
+                <span class="menu-badge" id="orders-badge">0</span>
+            </a>
+            <a href="#add-product" class="menu-item" onclick="switchSection('add-product')">
+                <i class="fas fa-plus-circle"></i> إضافة منتج
+            </a>
+            <a href="#analytics" class="menu-item" onclick="switchSection('analytics')">
+                <i class="fas fa-chart-line"></i> التحليلات
+            </a>
+        </div>
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <i class="fas fa-user-circle"></i>
+                <span>البائع</span>
+            </div>
+            <button class="btn-logout" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile Top Bar -->
+    <div class="mobile-topbar">
+        <button class="menu-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h2>لوحة التحكم</h2>
+        <div class="mobile-actions">
+            <button class="btn-refresh" onclick="refreshAll()">
+                <i class="fas fa-sync-alt"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="dashboard-wrapper">
+            <!-- Header Stats -->
+            <div class="stats-cards animate__animated animate__fadeInDown">
+                <div class="stat-card stat-primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-box"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-products">0</h3>
+                        <p>المنتجات</p>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 12%
+                    </div>
+                </div>
+                <div class="stat-card stat-warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-orders">0</h3>
+                        <p>الطلبات</p>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 8%
+                    </div>
+                </div>
+                <div class="stat-card stat-success">
+                    <div class="stat-icon">
+                        <i class="fas fa-money-bill-wave"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-sales">0 دج</h3>
+                        <p>المبيعات</p>
+                    </div>
+                    <div class="stat-trend down">
+                        <i class="fas fa-arrow-down"></i> 3%
+                    </div>
+                </div>
+                <div class="stat-card stat-info">
+                    <div class="stat-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h3 id="total-customers">0</h3>
+                        <p>العملاء</p>
+                    </div>
+                    <div class="stat-trend up">
+                        <i class="fas fa-arrow-up"></i> 15%
+                    </div>
+                </div>
+            </div>
+
+            <!-- تاريخ اليوم -->
+            <div class="date-display animate__animated animate__fadeIn">
+                <i class="fas fa-calendar-alt"></i>
+                <span id="current-date"></span>
+                <div class="quick-actions">
+                    <button class="btn-action" onclick="printShippingReport()">
+                        <i class="fas fa-print"></i> تقرير الشحن
+                    </button>
+                    <button class="btn-action" onclick="exportData()">
+                        <i class="fas fa-file-export"></i> تصدير البيانات
+                    </button>
+                </div>
+            </div>
+
+            <!-- القسم النشط -->
+            <div class="active-section" id="active-section">
+                <!-- قسم المنتجات (افتراضي) -->
+                <div class="section-content active" id="products-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-boxes"></i> إدارة المنتجات</h2>
+                        <div class="section-tools">
+                            <div class="search-container">
+                                <input type="text" id="product-search" placeholder="ابحث عن منتج..." class="search-input">
+                                <i class="fas fa-search search-icon"></i>
+                            </div>
+                            <div class="filter-buttons">
+                                <select id="category-filter" class="filter-select">
+                                    <option value="">جميع الفئات</option>
+                                </select>
+                                <select id="stock-filter" class="filter-select">
+                                    <option value="">جميع الكميات</option>
+                                    <option value="in-stock">متوفر</option>
+                                    <option value="out-of-stock">نفذ</option>
+                                    <option value="low-stock">كمية قليلة</option>
+                                </select>
+                                <button class="btn-add" onclick="switchSection('add-product')">
+                                    <i class="fas fa-plus"></i> إضافة منتج
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="products-grid" id="products-container">
+                        <!-- المنتجات تظهر هنا -->
+                        <div class="loading-state" id="loading-products">
+                            <div class="spinner"></div>
+                            <p>جاري تحميل المنتجات...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم الطلبات -->
+                <div class="section-content" id="orders-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-shopping-cart"></i> إدارة الطلبات</h2>
+                        <div class="section-tools">
+                            <div class="search-container">
+                                <input type="text" id="order-search" placeholder="ابحث برقم الطلب أو العميل..." class="search-input">
+                                <i class="fas fa-search search-icon"></i>
+                            </div>
+                            <div class="filter-buttons">
+                                <select id="status-filter" class="filter-select">
+                                    <option value="">جميع الحالات</option>
+                                    <option value="pending">قيد الانتظار</option>
+                                    <option value="confirmed">مؤكد</option>
+                                    <option value="shipped">مرسل</option>
+                                    <option value="delivered">مستلم</option>
+                                    <option value="cancelled">ملغي</option>
+                                </select>
+                                <input type="date" id="date-filter" class="filter-select">
+                                <button class="btn-refresh" onclick="refreshOrders()">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- جدول الطلبات محسّن للهواتف -->
+                    <div class="orders-container-responsive" id="orders-container-responsive">
+                        <!-- الطلبات تظهر هنا بشكل متجاوب -->
+                        <div class="loading-state" id="loading-orders">
+                            <div class="spinner"></div>
+                            <p>جاري تحميل الطلبات...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- قسم إضافة منتج -->
+                <div class="section-content" id="add-product-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-plus-circle"></i> إضافة منتج جديد</h2>
+                        <button class="btn-back" onclick="switchSection('products')">
+                            <i class="fas fa-arrow-right"></i> العودة
+                        </button>
+                    </div>
+                    
+                    <form id="add-product-form" class="product-form">
+                        <div class="form-sections">
+                            <!-- المعلومات الأساسية -->
+                            <div class="form-section">
+                                <h3><i class="fas fa-info-circle"></i> المعلومات الأساسية</h3>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label for="name">اسم المنتج *</label>
+                                        <input type="text" id="name" required placeholder="أدخل اسم المنتج">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="price">السعر (دج) *</label>
+                                        <input type="number" id="price" step="0.01" required placeholder="0.00">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="originalPrice">السعر الأصلي (دج)</label>
+                                        <input type="number" id="originalPrice" step="0.01" placeholder="اختياري">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="discount">نسبة الخصم (%)</label>
+                                        <div class="discount-input">
+                                            <input type="range" id="discount-range" min="0" max="100" value="0">
+                                            <input type="number" id="discount" min="0" max="100" value="0">
+                                            <span>%</span>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="category">الفئة *</label>
+                                        <select id="category" required>
+                                            <option value="">اختر الفئة</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="stock">الكمية المتاحة *</label>
+                                        <input type="number" id="stock" required placeholder="0">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- صور المنتج -->
+                            <div class="form-section">
+                                <h3><i class="fas fa-images"></i> صور المنتج</h3>
+                                <div class="image-upload-section">
+                                    <div class="upload-area" id="upload-area" onclick="document.getElementById('image-input').click()">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                        <p>انقر لرفع الصور أو اسحبها هنا</p>
+                                        <small>يُسمح بـ JPEG, PNG, GIF, WebP (حتى 5MB لكل صورة)</small>
+                                        <input type="file" id="image-input" multiple accept="image/*" hidden>
+                                    </div>
+                                    <div class="image-preview-grid" id="image-preview">
+                                        <!-- معاينة الصور تظهر هنا -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- وصف المنتج -->
+                            <div class="form-section">
+                                <h3><i class="fas fa-file-alt"></i> وصف المنتج</h3>
+                                <div class="form-group">
+                                    <textarea id="description" rows="4" required placeholder="أدخل وصف المنتج..."></textarea>
+                                </div>
+                            </div>
+
+                            <!-- الخيارات -->
+                            <div class="form-section">
+                                <h3><i class="fas fa-cog"></i> خيارات المنتج</h3>
+                                <div class="options-grid">
+                                    <div class="option-group">
+                                        <label>الألوان المتاحة</label>
+                                        <div class="tags-input-container">
+                                            <div class="tags-input" id="colors-container">
+                                                <input type="text" id="color-input" placeholder="أضف لون ثم اضغط Enter">
+                                                <div class="tags-list" id="colors-tags"></div>
+                                            </div>
+                                            <div class="color-suggestions">
+                                                <span class="color-suggestion" style="background: #ff0000;" onclick="addColor('أحمر')"></span>
+                                                <span class="color-suggestion" style="background: #0000ff;" onclick="addColor('أزرق')"></span>
+                                                <span class="color-suggestion" style="background: #00ff00;" onclick="addColor('أخضر')"></span>
+                                                <span class="color-suggestion" style="background: #ffff00;" onclick="addColor('أصفر')"></span>
+                                                <span class="color-suggestion" style="background: #000000;" onclick="addColor('أسود')"></span>
+                                                <span class="color-suggestion" style="background: #ffffff; border: 1px solid #ddd;" onclick="addColor('أبيض')"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="option-group">
+                                        <label>المقاسات المتاحة</label>
+                                        <div class="tags-input-container">
+                                            <div class="tags-input" id="sizes-container">
+                                                <input type="text" id="size-input" placeholder="أضف مقاس ثم اضغط Enter">
+                                                <div class="tags-list" id="sizes-tags"></div>
+                                            </div>
+                                            <div class="size-suggestions">
+                                                <span class="size-suggestion" onclick="addSize('S')">S</span>
+                                                <span class="size-suggestion" onclick="addSize('M')">M</span>
+                                                <span class="size-suggestion" onclick="addSize('L')">L</span>
+                                                <span class="size-suggestion" onclick="addSize('XL')">XL</span>
+                                                <span class="size-suggestion" onclick="addSize('XXL')">XXL</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="option-group">
+                                        <label>مميزات المنتج</label>
+                                        <div class="tags-input" id="features-container">
+                                            <input type="text" id="feature-input" placeholder="أضف ميزة ثم اضغط Enter">
+                                            <div class="tags-list" id="features-tags"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- زر الحفظ -->
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="resetForm()">
+                                <i class="fas fa-redo"></i> إعادة تعيين
+                            </button>
+                            <button type="submit" class="btn-primary">
+                                <i class="fas fa-save"></i> حفظ المنتج
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- قسم التحليلات -->
+                <div class="section-content" id="analytics-section">
+                    <div class="section-header">
+                        <h2><i class="fas fa-chart-line"></i> التحليلات والإحصائيات</h2>
+                    </div>
+                    <div class="analytics-grid">
+                        <div class="chart-container">
+                            <h3>المبيعات اليومية</h3>
+                            <div class="chart-placeholder" id="sales-chart">
+                                <!-- سيتم ملء هذا بالمخطط البياني -->
+                            </div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>المنتجات الأكثر مبيعاً</h3>
+                            <div class="chart-placeholder" id="top-products-chart">
+                                <!-- سيتم ملء هذا بالمخطط البياني -->
+                            </div>
+                        </div>
+                        <div class="stats-overview">
+                            <h3>نظرة عامة</h3>
+                            <div class="stats-list">
+                                <div class="stat-item">
+                                    <i class="fas fa-shopping-cart"></i>
+                                    <div>
+                                        <h4>إجمالي الطلبات</h4>
+                                        <p id="total-orders-stat">0</p>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-money-bill"></i>
+                                    <div>
+                                        <h4>إجمالي المبيعات</h4>
+                                        <p id="total-sales-stat">0 دج</p>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-box"></i>
+                                    <div>
+                                        <h4>إجمالي المنتجات</h4>
+                                        <p id="total-products-stat">0</p>
+                                    </div>
+                                </div>
+                                <div class="stat-item">
+                                    <i class="fas fa-eye"></i>
+                                    <div>
+                                        <h4>إجمالي المشاهدات</h4>
+                                        <p id="total-views-stat">0</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal-overlay" id="order-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h3>تفاصيل الطلب</h3>
+                <button class="modal-close" onclick="closeModal('order-modal')">&times;</button>
+            </div>
+            <div class="modal-content" id="order-details">
+                <!-- تفاصيل الطلب تظهر هنا -->
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal-container large">
+            <div class="modal-header">
+                <h3>تفاصيل المنتج</h3>
+                <button class="modal-close" onclick="closeModal('product-modal')">&times;</button>
+            </div>
+            <div class="modal-content" id="product-details">
+                <!-- تفاصيل المنتج تظهر هنا -->
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="shipping-modal">
+        <div class="modal-container xlarge">
+            <div class="modal-header">
+                <h3>ورقة التوصيل</h3>
+                <div class="modal-actions">
+                    <button class="btn-primary" onclick="printShipping()">
+                        <i class="fas fa-print"></i> طباعة
+                    </button>
+                    <button class="modal-close" onclick="closeModal('shipping-modal')">&times;</button>
+                </div>
+            </div>
+            <div class="modal-content" id="shipping-content">
+                <!-- محتوى ورقة التوصيل يظهر هنا -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Action Button -->
+    <button class="fab" onclick="switchSection('add-product')">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Notification Bell -->
+    <div class="notification-bell" id="notification-bell" onclick="toggleNotifications()">
+        <i class="fas fa-bell"></i>
+        <span class="notification-count" id="notification-count">0</span>
+        <div class="notifications-dropdown" id="notifications-dropdown">
+            <div class="notifications-header">
+                <h4>الإشعارات</h4>
+                <button class="btn-mark-read" onclick="markAllAsRead()">
+                    <i class="fas fa-check-double"></i>
+                </button>
+            </div>
+            <div class="notifications-list" id="notifications-list">
+                <!-- الإشعارات تظهر هنا -->
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+    <script>
+        // تهيئة سريعة
+        document.addEventListener('DOMContentLoaded', () => {
+            initDashboard();
+            updateCurrentDate();
+            
+            // إضافة تأثيرات عند التحميل
+            setTimeout(() => {
+                document.getElementById('loader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('loader').style.display = 'none';
+                }, 300);
+            }, 800);
+        });
+        
+        // منع التمرير الأفقي على الهواتف
+        document.addEventListener('touchmove', (e) => {
+            if (window.innerWidth <= 768) {
+                if (e.touches.length > 1) e.preventDefault();
+            }
+        }, { passive: false });
+    </script>
+</body>
+</html>

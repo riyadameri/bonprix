@@ -1,5 +1,3 @@
-
-
 /* Reset and Base Styles */
 * {
     margin: 0;
@@ -46,6 +44,7 @@ body {
 
 .container {
     width: 100%;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 0 16px;
     flex: 1;
@@ -777,58 +776,451 @@ main {
     }
 }
 
-/* Tablet Styles */
+/* ============================================= */
+/* الأنماط الجديدة للشراء المباشر */
+/* ============================================= */
+
+/* ترويسة الشراء */
+.purchase-header {
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-blue));
+    color: white;
+    padding: 25px;
+    border-radius: var(--radius);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.purchase-header h2 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.purchase-header p {
+    opacity: 0.9;
+    font-size: 1rem;
+}
+
+/* ملخص الطلب */
+.order-summary {
+    background: var(--white);
+    padding: 20px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 20px;
+}
+
+.order-summary h3 {
+    color: var(--primary-blue);
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.order-items {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.order-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+}
+
+.order-item-image {
+    width: 70px;
+    height: 70px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.order-item-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.order-item-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.order-item-name {
+    color: var(--primary-blue);
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 0.95rem;
+}
+
+.order-item-meta {
+    display: flex;
+    gap: 10px;
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.order-item-price {
+    color: var(--secondary-blue);
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.order-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border-color);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: var(--primary-blue);
+}
+
+.order-total span:last-child {
+    color: var(--secondary-blue);
+    font-size: 1.3rem;
+}
+
+/* نموذج الشراء - بدون scroll داخلي */
+.checkout-form {
+    background: var(--white);
+    padding: 25px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 30px;
+    /* إزالة خاصية التمرير الداخلي */
+    /* max-height: none; */
+    /* overflow: visible; */
+}
+
+.form-section {
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.form-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.form-section h3 {
+    color: var(--primary-blue);
+    margin-bottom: 20px;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--primary-blue);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.form-group label::after {
+    content: '*';
+    color: var(--danger-red);
+    margin-right: 4px;
+    display: inline;
+}
+
+.form-group label:has(+ :not([required]))::after {
+    display: none;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    font-family: 'Cairo', sans-serif;
+    font-size: 1rem;
+    transition: var(--transition);
+    background: white;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--secondary-blue);
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* طرق الدفع */
+.payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.payment-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.payment-option input[type="radio"] {
+    display: none;
+}
+
+.payment-option label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.payment-option label:hover {
+    border-color: var(--secondary-blue);
+    background: rgba(52, 152, 219, 0.05);
+}
+
+.payment-option input[type="radio"]:checked + label {
+    border-color: var(--secondary-blue);
+    background: rgba(52, 152, 219, 0.1);
+    color: var(--secondary-blue);
+    font-weight: 600;
+}
+
+.payment-option label i {
+    font-size: 1.2rem;
+    color: var(--secondary-blue);
+}
+
+/* إجراءات النموذج */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 30px;
+    flex-direction: column;
+}
+
+/* أزرار الشراء المحسنة */
+.buy-options {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.buy-now-btn {
+    background: linear-gradient(135deg, var(--success-green), #27ae60);
+    color: white;
+    border: none;
+    padding: 16px 24px;
+    border-radius: var(--radius);
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.buy-now-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(46, 204, 113, 0.3);
+}
+
+.buy-now-btn:active {
+    transform: translateY(0);
+}
+
+.buy-now-btn i {
+    font-size: 1.2rem;
+}
+
+/* تحسينات الشحن */
+.shipping-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.shipping-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background: white;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.shipping-option:hover {
+    border-color: var(--secondary-blue);
+}
+
+.shipping-option.selected {
+    border-color: var(--secondary-blue);
+    background: rgba(52, 152, 219, 0.05);
+}
+
+.shipping-option input[type="radio"] {
+    margin: 0;
+}
+
+.shipping-option label {
+    flex: 1;
+    margin: 0;
+    cursor: pointer;
+}
+
+.shipping-price {
+    color: var(--secondary-blue);
+    font-weight: bold;
+}
+
+/* تحميل أثناء الشراء */
+.purchase-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 5000;
+    display: none;
+}
+
+.purchase-loading.active {
+    display: flex;
+}
+
+.purchase-loading i {
+    font-size: 3rem;
+    color: var(--secondary-blue);
+    margin-bottom: 20px;
+}
+
+.purchase-loading p {
+    font-size: 1.2rem;
+    color: var(--primary-blue);
+    margin-bottom: 10px;
+}
+
+/* شريط التقدم */
+.progress-bar {
+    width: 80%;
+    max-width: 300px;
+    height: 6px;
+    background: var(--border-color);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--secondary-blue);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+/* تحسينات للهواتف */
+@media (max-width: 768px) {
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .buy-options {
+        flex-direction: column;
+    }
+    
+    .payment-option label {
+        padding: 12px 15px;
+    }
+    
+    .order-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .order-item-image {
+        width: 100px;
+        height: 100px;
+    }
+}
+
 @media (min-width: 768px) {
-    .container {
-        max-width: 720px;
-        padding: 0 20px;
+    .form-grid {
+        grid-template-columns: 1fr 1fr;
     }
     
-    .logo h1 {
-        font-size: 1.3rem;
+    .form-actions {
+        flex-direction: row;
     }
     
-    .product-title {
-        font-size: 1.8rem;
+    .buy-options {
+        flex-direction: row;
+    }
+    
+    .form-group.full-width {
+        grid-column: 1 / -1;
     }
     
     .product-content {
         grid-template-columns: 1fr 1fr;
         gap: 30px;
     }
-    
-    .image-gallery {
-        grid-column: 1;
-        grid-row: 1;
-    }
-    
-    .product-info {
-        grid-column: 2;
-        grid-row: 1;
-    }
-    
-    .action-buttons {
-        flex-direction: row;
-    }
-    
-    .related-grid {
-        grid-template-columns: repeat(4, 1fr);
-    }
-    
-    .back-link span {
-        font-size: 1rem;
-    }
 }
 
-/* Desktop Styles */
 @media (min-width: 992px) {
-    .container {
-        max-width: 1140px;
-        padding: 0 15px;
-    }
-    
     .product-content {
         grid-template-columns: 1.2fr 0.8fr;
+        gap: 40px;
     }
     
     .main-image {
@@ -837,18 +1229,6 @@ main {
     
     .thumbnails {
         grid-template-columns: repeat(6, 1fr);
-    }
-}
-
-/* Large Desktop Styles */
-@media (min-width: 1200px) {
-    .container {
-        max-width: 1320px;
-    }
-    
-    .product-content {
-        grid-template-columns: 1fr 0.8fr;
-        gap: 40px;
     }
 }
 
@@ -889,34 +1269,81 @@ main {
     }
 }
 
-/* Landscape Orientation Fixes */
-@media (max-height: 500px) and (orientation: landscape) {
-    .main-image {
-        height: 200px;
-    }
-    
-    .product-header {
-        padding: 15px;
-    }
-    
-    .product-title {
-        font-size: 1.3rem;
-        margin-bottom: 10px;
-    }
-    
-    .product-meta {
-        margin-bottom: 15px;
-    }
+/* تحسينات النموذج */
+.input-hint {
+    font-size: 0.85rem;
+    color: #666;
+    margin-top: 5px;
+    display: block;
 }
 
-/* High DPI Screens */
-@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
-    .btn {
-        font-weight: 500;
-    }
+.required-note {
+    color: var(--danger-red);
+    font-size: 0.9rem;
+    margin-top: 20px;
+    text-align: left;
 }
 
-/* Accessibility Improvements */
+/* تحسينات الوصول */
+.btn:focus,
+input:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--secondary-blue);
+    outline-offset: 2px;
+}
+
+/* أنماط الحقول المطلوبة */
+input:invalid,
+select:invalid,
+textarea:invalid {
+    border-color: var(--danger-red);
+}
+
+input:valid,
+select:valid,
+textarea:valid {
+    border-color: var(--success-green);
+}
+
+/* Shipping Info */
+.shipping-info {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: var(--radius);
+}
+
+.shipping-price {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.shipping-price strong {
+    color: var(--primary-blue);
+}
+
+.shipping-price span {
+    color: var(--secondary-blue);
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+.shipping-note {
+    color: #666;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.shipping-note i {
+    color: var(--secondary-blue);
+}
+
+/* تحسينات الحركة */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
@@ -925,13 +1352,24 @@ main {
     }
 }
 
+/* تحسينات للمحتوى الطويل */
+.form-section textarea {
+    min-height: 80px;
+    max-height: 200px;
+}
 
+/* Bank Details */
+#bankDetails {
+    animation: fadeIn 0.3s ease;
+}
 
-
-
-
-
-
-
-
-
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

@@ -389,6 +389,7 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
 app.listen(PORT, () => {
     console.log(`✅ الخادم يعمل على المنفذ ${PORT}`);
     console.log(`🌐 رابط البائع: http://localhost:${PORT}/seller.html`);
+    console.log(`🌐 رابط البائع: http://localhost:${PORT}/dashboard.html`);
     console.log(`🛒 رابط المشتري: http://localhost:${PORT}/buyer.html`);
     console.log(`📱 رابط المتجر: http://localhost:${PORT}/product.html`);
 });
