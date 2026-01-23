@@ -644,84 +644,66 @@ function updateCartCount() {
 async function submitOrder(event) {
     event.preventDefault();
     
-    if (!state.product || state.product.stock === 0) {
-        showAlert('المنتج غير متوفر حالياً', 'error');
-        return;
-    }
-    
-    if (state.quantity > state.product.stock) {
-        showAlert('الكمية المطلوبة غير متاحة', 'error');
-        return;
-    }
-    
-    // التحقق من صحة البيانات
-    if (!validateForm()) {
-        showAlert('يرجى ملء جميع الحقول المطلوبة بشكل صحيح', 'error');
-        return;
-    }
-    
-    // إظهار نافذة التحميل
-    showPurchaseLoading();
+    console.log('Submitting order with data:', {
+        products: [{
+            productId: state.product._id,
+            quantity: state.quantity,
+            color: state.selectedColor,
+            size: state.selectedSize,
+            price: calculateDiscountedPrice(state.product)
+        }],
+        customer: {
+            fullName: state.formData.fullName,
+            phone: state.formData.phone,
+            email: state.formData.email || '',
+            wilaya: state.formData.wilaya,
+            address: state.formData.address,
+            notes: state.formData.notes
+        }
+    });
     
     try {
-        // تحضير بيانات الطلب
-        const orderData = {
-            products: [{
-                productId: state.product._id,
-                quantity: state.quantity,
-                color: state.selectedColor,
-                size: state.selectedSize,
-                price: calculateDiscountedPrice(state.product)
-            }],
-            customer: {
-                fullName: state.formData.fullName,
-                phone: state.formData.phone,
-                email: state.formData.email || '',
-                wilaya: state.formData.wilaya,
-                address: state.formData.address,
-                notes: state.formData.notes
-            },
-            subtotal: (calculateDiscountedPrice(state.product) * state.quantity).toFixed(2),
-            shipping: state.shippingPrices[state.formData.wilaya] || 600,
-            total: ((calculateDiscountedPrice(state.product) * state.quantity) + (state.shippingPrices[state.formData.wilaya] || 600)).toFixed(2),
-            paymentMethod: state.formData.paymentMethod
-        };
-        
-        // إرسال الطلب إلى الخادم
         const response = await fetch('/api/orders', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(orderData)
+            body: JSON.stringify({
+                products: [{
+                    productId: state.product._id,
+                    quantity: state.quantity,
+                    color: state.selectedColor,
+                    size: state.selectedSize,
+                    price: parseFloat(calculateDiscountedPrice(state.product))
+                }],
+                customer: {
+                    fullName: state.formData.fullName.trim(),
+                    phone: state.formData.phone.trim(),
+                    email: state.formData.email?.trim() || '',
+                    wilaya: state.formData.wilaya,
+                    address: state.formData.address.trim(),
+                    notes: state.formData.notes.trim()
+                }
+            })
         });
         
-        const result = await response.json();
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
         
-        if (response.ok) {
-            // إخفاء نافذة التحميل
-            hidePurchaseLoading();
-            
-            // عرض رسالة النجاح
-            showAlert(result.message || 'تم تأكيد طلبك بنجاح! سنتصل بك قريباً.', 'success');
-            
-            // مسح بيانات النموذج
-            resetFormData();
-            
-            // الانتقال إلى صفحة المشتري بعد 3 ثواني
-            setTimeout(() => {
-                window.location.href = 'buyer.html?orderSuccess=true';
-            }, 3000);
-        } else {
-            throw new Error(result.error || 'حدث خطأ أثناء معالجة الطلب');
+        const result = await response.json();
+        console.log('Response data:', result);
+        
+        if (!response.ok) {
+            throw new Error(result.error || result.details || 'خطأ في إنشاء الطلب');
         }
+        
+        // Success handling...
+        
     } catch (error) {
-        hidePurchaseLoading();
-        showAlert(error.message || 'حدث خطأ أثناء معالجة الطلب', 'error');
-        console.error('Order submission error:', error);
+        console.error('Full error details:', error);
+        showAlert(`خطأ في إنشاء الطلب: ${error.message}`, 'error');
     }
 }
-
 // التحقق من صحة النموذج
 function validateForm() {
     const phoneRegex = /^[0][5-7][0-9]{8}$/;
