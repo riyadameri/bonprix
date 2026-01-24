@@ -7,25 +7,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({
-    origin: [
-        'https://bonprix-bqvx.onrender.com',
-        'http://localhost:3000',
-        'http://127.0.0.1:5500', // For local testing
-        'http://127.0.0.1:5501', // For local testing
-        'http://localhost:5000',  // For local testing
-        'http://localhost:3000',  // For local testing
-        
-
-    ],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-// Handle preflight requests
-app.options('*', cors());
-
+app.use(cors());
 app.use(express.json({ limit: '50mb' })); // زيادة الحد للصور الكبيرة
 app.use(express.static('frontend'));
 
@@ -263,94 +245,51 @@ app.delete('/api/products/:id', async (req, res) => {
 // إنشاء طلب جديد
 app.post('/api/orders', async (req, res) => {
     try {
-        console.log('Received order request:', req.body);
-        
         const { products, customer } = req.body;
         
-        // Validation
-        if (!products || !Array.isArray(products) || products.length === 0) {
-            return res.status(400).json({ error: 'يجب اختيار منتج واحد على الأقل' });
-        }
-        
-        if (!customer || !customer.fullName || !customer.phone || !customer.wilaya || !customer.address) {
-            return res.status(400).json({ 
-                error: 'جميع الحقول المطلوبة يجب ملؤها',
-                required: ['fullName', 'phone', 'wilaya', 'address']
-            });
-        }
-        
-        // Phone validation for Algerian numbers
-        const phoneRegex = /^0[5-7][0-9]{8}$/;
-        if (!phoneRegex.test(customer.phone)) {
-            return res.status(400).json({ 
-                error: 'رقم الهاتف غير صحيح',
-                example: '0551234567'
-            });
-        }
-        
-        // Calculate subtotal
+        // حساب المجموع
         let subtotal = 0;
         const orderProducts = [];
         
         for (const item of products) {
-            // Convert productId to ObjectId if needed
-            const productId = mongoose.Types.ObjectId.isValid(item.productId) 
-                ? new mongoose.Types.ObjectId(item.productId)
-                : item.productId;
-            
-            const product = await Product.findById(productId);
+            const product = await Product.findById(item.productId);
             if (!product) {
-                return res.status(400).json({ error: `المنتج غير موجود` });
+                return res.status(400).json({ error: `المنتج ${item.productId} غير موجود` });
             }
             
             if (product.stock < item.quantity) {
-                return res.status(400).json({ 
-                    error: `الكمية غير متاحة للمنتج ${product.name}`,
-                    available: product.stock,
-                    requested: item.quantity
-                });
+                return res.status(400).json({ error: `الكمية غير متاحة للمنتج ${product.name}` });
             }
             
-            const itemPrice = parseFloat(item.price) || parseFloat(product.price);
-            const itemTotal = itemPrice * item.quantity;
+            const itemTotal = product.price * item.quantity;
             subtotal += itemTotal;
             
             orderProducts.push({
-                productId: product._id,
+                productId: item.productId,
                 quantity: item.quantity,
-                color: item.color || null,
-                size: item.size || null,
-                price: itemPrice
+                color: item.color,
+                size: item.size,
+                price: product.price
             });
         }
         
-        // Calculate shipping
+        // حساب سعر التوصيل
         const shipping = shippingPrices[customer.wilaya] || 600;
         const total = subtotal + shipping;
         
-        // Generate order
+        // إنشاء الطلب
         const order = new Order({
             orderId: generateOrderId(),
             products: orderProducts,
-            customer: {
-                fullName: customer.fullName,
-                phone: customer.phone,
-                email: customer.email || '',
-                wilaya: customer.wilaya,
-                address: customer.address,
-                notes: customer.notes || ''
-            },
-            subtotal: parseFloat(subtotal.toFixed(2)),
-            shipping: parseFloat(shipping.toFixed(2)),
-            total: parseFloat(total.toFixed(2)),
-            paymentMethod: customer.paymentMethod || 'cash_on_delivery'
+            customer,
+            subtotal,
+            shipping,
+            total
         });
-        
-        console.log('Saving order:', order);
         
         await order.save();
         
-        // Update stock
+        // تحديث المخزون
         for (const item of products) {
             await Product.findByIdAndUpdate(item.productId, {
                 $inc: { stock: -item.quantity }
@@ -358,42 +297,13 @@ app.post('/api/orders', async (req, res) => {
         }
         
         res.status(201).json({
-            success: true,
             message: 'تم استلام طلبك بنجاح! سنتصل بك للتأكيد في أقرب وقت ممكن.',
             orderId: order.orderId,
-            order: {
-                _id: order._id,
-                orderId: order.orderId,
-                total: order.total,
-                status: order.status,
-                createdAt: order.createdAt
-            }
+            order
         });
-        
     } catch (error) {
-        console.error('Order creation error:', error);
-        
-        // Handle duplicate orderId error
-        if (error.code === 11000) {
-            return res.status(400).json({ 
-                error: 'حدث خطأ، يرجى المحاولة مرة أخرى',
-                details: 'رقم الطلب مكرر'
-            });
-        }
-        
-        // Handle validation errors
-        if (error.name === 'ValidationError') {
-            const messages = Object.values(error.errors).map(err => err.message);
-            return res.status(400).json({ 
-                error: 'خطأ في البيانات المرسلة',
-                details: messages
-            });
-        }
-        
-        res.status(400).json({ 
-            error: 'خطأ في إنشاء الطلب',
-            details: error.message
-        });
+        console.error(error);
+        res.status(400).json({ error: 'خطأ في إنشاء الطلب' });
     }
 });
 
@@ -473,28 +383,6 @@ app.get('/api/placeholder/:width/:height', (req, res) => {
   `;
   res.set('Content-Type', 'image/svg+xml');
   res.send(svg);
-});
-
-// Test endpoint
-app.get('/api/test', (req, res) => {
-    res.json({ 
-        status: 'API is working',
-        timestamp: new Date().toISOString(),
-        nodeVersion: process.version
-    });
-});
-
-app.post('/api/test-order', async (req, res) => {
-    try {
-        console.log('Test order received:', req.body);
-        res.json({ 
-            success: true,
-            message: 'Test order received successfully',
-            data: req.body
-        });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
 });
 
 // تشغيل الخادم
