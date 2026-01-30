@@ -4,7 +4,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -306,7 +306,122 @@ app.post('/api/orders', async (req, res) => {
         res.status(400).json({ error: 'خطأ في إنشاء الطلب' });
     }
 });
+// Add this route to your server.js after the existing /api/orders route
 
+// إنشاء طلب جديد من صفحة المنتج
+app.post('/api/orders/create', async (req, res) => {
+    try {
+        const { products, customer, shippingPrice, totalPrice } = req.body;
+        
+        console.log('📦 Creating order from product page:', { products, customer });
+        
+        // التحقق من البيانات المطلوبة
+        if (!products || !customer) {
+            return res.status(400).json({ 
+                error: 'بيانات غير كاملة',
+                details: 'يرجى إدخال جميع البيانات المطلوبة' 
+            });
+        }
+
+        // التحقق من صحة رقم الهاتف
+        const phoneRegex = /^[0][5-7][0-9]{8}$/;
+        if (!phoneRegex.test(customer.phone)) {
+            return res.status(400).json({ 
+                error: 'رقم هاتف غير صحيح',
+                details: 'يرجى إدخال رقم هاتف جزائري صحيح (مثال: 0551234567)' 
+            });
+        }
+
+        // التحقق من وجود المنتجات
+        for (const item of products) {
+            const product = await Product.findById(item.productId);
+            if (!product) {
+                return res.status(404).json({ 
+                    error: 'المنتج غير موجود',
+                    details: `المنتج ${item.productId} غير موجود` 
+                });
+            }
+            
+            if (product.stock < item.quantity) {
+                return res.status(400).json({ 
+                    error: 'الكمية غير متاحة',
+                    details: `الكمية المطلوبة غير متاحة للمنتج ${product.name}` 
+                });
+            }
+        }
+
+        // حساب المجموع
+        let subtotal = 0;
+        const orderProducts = [];
+        
+        for (const item of products) {
+            const product = await Product.findById(item.productId);
+            const itemTotal = parseFloat(item.price) * item.quantity;
+            subtotal += itemTotal;
+            
+            orderProducts.push({
+                productId: item.productId,
+                quantity: item.quantity,
+                color: item.color,
+                size: item.size,
+                price: parseFloat(item.price),
+                productName: product.name
+            });
+            
+            // تحديث المخزون
+            await Product.findByIdAndUpdate(item.productId, {
+                $inc: { stock: -item.quantity }
+            });
+        }
+
+        // استخدام سعر الشحن من الطلب أو الحساب الافتراضي
+        const shipping = shippingPrice || shippingPrices[customer.wilaya] || 600;
+        const total = totalPrice || (subtotal + shipping);
+        
+        // إنشاء الطلب
+        const order = new Order({
+            orderId: generateOrderId(),
+            products: orderProducts,
+            customer: {
+                fullName: customer.fullName,
+                phone: customer.phone,
+                email: customer.email || '',
+                wilaya: customer.wilaya,
+                address: customer.address,
+                notes: customer.notes || '',
+                paymentMethod: customer.paymentMethod || 'cash_on_delivery'
+            },
+            subtotal,
+            shipping,
+            total,
+            status: 'pending',
+            notes: customer.notes
+        });
+        
+        await order.save();
+        
+        console.log('✅ Order created successfully:', order.orderId);
+        
+        // إرسال رد النجاح
+        res.status(201).json({
+            success: true,
+            message: 'تم إنشاء طلبك بنجاح!',
+            orderNumber: order.orderId,
+            orderId: order._id,
+            customer: customer.fullName,
+            total: total,
+            wilaya: customer.wilaya,
+            shipping: shipping
+        });
+        
+    } catch (error) {
+        console.error('❌ Error creating order:', error);
+        res.status(500).json({ 
+            error: 'خطأ في إنشاء الطلب',
+            details: error.message 
+        });
+    }
+});
 // جلب جميع الطلبات
 app.get('/api/orders', async (req, res) => {
     try {

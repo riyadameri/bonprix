@@ -1373,3 +1373,326 @@ textarea:valid {
         transform: translateY(0);
     }
 }
+
+
+
+/* تحسينات التنبيهات */
+.alert {
+    position: fixed;
+    top: calc(var(--navbar-height) + var(--safe-area-top) + 20px);
+    left: 20px;
+    right: 20px;
+    padding: 15px 20px;
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 4000;
+    animation: slideInDown 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 0.95rem;
+    min-height: 60px;
+    transition: all 0.3s ease;
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border-left: 4px solid #219653;
+}
+
+.alert-error {
+    background: linear-gradient(135deg, #e74c3c, #c0392b);
+    color: white;
+    border-left: 4px solid #d63031;
+}
+
+.alert i {
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+/* زر التأكيد المحسن */
+.btn-primary {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-primary:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%);
+    transform-origin: 50% 50%;
+}
+
+.btn-primary:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 0.5;
+    }
+    20% {
+        transform: scale(25, 25);
+        opacity: 0.3;
+    }
+    100% {
+        opacity: 0;
+        transform: scale(40, 40);
+    }
+}
+
+/* تأثير التحول الناعم للصفحة */
+.page-transition {
+    opacity: 0;
+    transform: translateY(20px);
+    animation: pageFadeIn 0.5s ease forwards;
+}
+
+@keyframes pageFadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* إظهار رسالة النجاح في الصفحة الرئيسية */
+.order-success-banner {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    padding: 20px;
+    border-radius: var(--radius);
+    margin: 20px 0;
+    text-align: center;
+    animation: slideInDown 0.5s ease;
+}
+
+.order-success-banner i {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.order-success-banner h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+}
+
+.order-success-banner p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+
+/* Success Message Styles - إضافة في نهاية الملف */
+.success-message-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.success-message-box {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    max-width: 90%;
+    width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 2px solid #2ecc71;
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    animation: scaleIn 0.5s ease 0.2s both;
+}
+
+.success-icon i {
+    font-size: 40px;
+    color: white;
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.success-message-box h3 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.success-message-box p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.success-details {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: right;
+    border-right: 4px solid #3498db;
+}
+
+.success-details .detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.success-details .detail-item:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.success-details .detail-item strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.success-details .detail-item span {
+    color: #3498db;
+    font-weight: 500;
+}
+
+.success-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.success-actions .btn {
+    min-width: 140px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border: none;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #27ae60, #219653);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
+}
+
+/* الكونفيتي */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: fall 2s linear forwards;
+    z-index: 10000;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* تحسينات للهواتف */
+@media (max-width: 768px) {
+    .success-message-box {
+        width: 90%;
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .success-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .success-icon i {
+        font-size: 35px;
+    }
+    
+    .success-message-box h3 {
+        font-size: 20px;
+    }
+    
+    .success-message-box p {
+        font-size: 15px;
+    }
+    
+    .success-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .success-actions .btn {
+        width: 100%;
+    }
+}

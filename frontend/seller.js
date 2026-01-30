@@ -5,11 +5,8 @@ const state = {
     colors: [],
     sizes: [],
     features: [],
-    images: [], // لتخزين صور Base64
+    images: [],
     stats: {},
-    currentPage: 1,
-    productsPerPage: 10,
-    ordersPerPage: 10,
     isEditing: false,
     editingProductId: null
 };
@@ -42,65 +39,30 @@ const DOM = {
     // الحاويات
     productsContainer: document.getElementById('products-container'),
     ordersContainer: document.getElementById('orders-container'),
-    productCount: document.getElementById('product-count'),
-    orderCount: document.getElementById('order-count'),
+    statsContainer: document.getElementById('stats-container'),
     
-    // البحث والتصفية
+    // البحث
     productSearch: document.getElementById('product-search'),
-    categoryFilter: document.getElementById('category-filter'),
-    stockFilter: document.getElementById('stock-filter'),
-    sortProducts: document.getElementById('sort-products'),
-    statusFilter: document.getElementById('status-filter'),
-    dateFilter: document.getElementById('date-filter'),
     orderSearch: document.getElementById('order-search'),
-    
-    // المودال
-    orderModal: document.getElementById('order-modal'),
-    orderDetails: document.getElementById('order-details'),
-    productDetailModal: document.getElementById('product-detail-modal'),
-    productFullDetails: document.getElementById('product-full-details'),
-    shippingModal: document.getElementById('shipping-modal'),
-    shippingContent: document.getElementById('shipping-content'),
     
     // الإحصائيات
     totalProducts: document.getElementById('total-products'),
     totalOrders: document.getElementById('total-orders'),
-    totalSales: document.getElementById('total-sales'),
-    
-    // التحميل
-    loadingProducts: document.getElementById('loading-products')
+    totalSales: document.getElementById('total-sales')
 };
 
 // تهيئة التطبيق
 async function init() {
-    updateCurrentDate();
-    updateCurrentYear();
     setupEventListeners();
     setupMobileOptimizations();
     await loadStats();
     await loadProducts();
     await loadOrders();
-    startAutoRefresh();
-}
-
-// تحديث التاريخ الحالي
-function updateCurrentDate() {
-    const now = new Date();
-    const options = { 
-        weekday: 'long', 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    };
-    document.getElementById('current-date').textContent = 
-        now.toLocaleDateString('ar-SA', options);
-}
-
-// تحديث السنة الحالية
-function updateCurrentYear() {
-    document.getElementById('current-year').textContent = new Date().getFullYear();
+    
+    // إضافة تأثيرات اللمس
+    document.querySelectorAll('.btn, .nav-item, .product-card').forEach(el => {
+        el.classList.add('touch-feedback');
+    });
 }
 
 // إعداد المستمعين للأحداث
@@ -142,38 +104,21 @@ function setupEventListeners() {
     setupTagsInput('sizes', DOM.sizeInput, DOM.sizesTags);
     setupTagsInput('features', DOM.featureInput, DOM.featuresTags);
     
-    // البحث والتصفية
+    // البحث
     DOM.productSearch.addEventListener('input', debounce(filterProducts, 300));
-    DOM.categoryFilter.addEventListener('change', filterProducts);
-    DOM.stockFilter.addEventListener('change', filterProducts);
-    DOM.sortProducts.addEventListener('change', filterProducts);
-    DOM.statusFilter.addEventListener('change', filterOrders);
-    DOM.dateFilter.addEventListener('change', filterOrders);
     DOM.orderSearch.addEventListener('input', debounce(filterOrders, 300));
     
-    // المودال
-    document.querySelectorAll('.close').forEach(btn => {
-        btn.addEventListener('click', () => {
-            DOM.orderModal.style.display = 'none';
-            DOM.productDetailModal.style.display = 'none';
-            DOM.shippingModal.style.display = 'none';
-        });
-    });
+    // منع إعادة تحميل الصفحة عند سحب للأسفل على الهواتف
+    let startY;
+    document.addEventListener('touchstart', e => {
+        startY = e.touches[0].clientY;
+    }, { passive: true });
     
-    window.addEventListener('click', (e) => {
-        if (e.target === DOM.orderModal) {
-            DOM.orderModal.style.display = 'none';
+    document.addEventListener('touchmove', e => {
+        if (window.scrollY === 0 && e.touches[0].clientY > startY) {
+            e.preventDefault();
         }
-        if (e.target === DOM.productDetailModal) {
-            DOM.productDetailModal.style.display = 'none';
-        }
-        if (e.target === DOM.shippingModal) {
-            DOM.shippingModal.style.display = 'none';
-        }
-    });
-    
-    // تحديث الإحصائيات عند التحميل
-    window.addEventListener('load', updateStatsUI);
+    }, { passive: false });
 }
 
 // إعداد المدخلات المتعددة
@@ -186,6 +131,7 @@ function setupTagsInput(type, inputElement, tagsContainer) {
                 state[type].push(value);
                 renderTags(type, tagsContainer);
                 inputElement.value = '';
+                inputElement.focus();
             }
         }
     });
@@ -198,6 +144,7 @@ function setupTagsInput(type, inputElement, tagsContainer) {
                 state[type].push(value);
                 renderTags(type, tagsContainer);
                 inputElement.value = '';
+                inputElement.focus();
             }
         }
     });
@@ -206,9 +153,9 @@ function setupTagsInput(type, inputElement, tagsContainer) {
 // عرض العلامات
 function renderTags(type, container) {
     container.innerHTML = state[type].map((tag, index) => `
-        <div class="tag" data-index="${index}">
+        <div class="tag">
             ${tag}
-            <span class="remove" onclick="removeTag('${type}', ${index})">×</span>
+            <span class="tag-remove" onclick="removeTag('${type}', ${index})">×</span>
         </div>
     `).join('');
 }
@@ -238,6 +185,11 @@ function handleFiles(files) {
             return;
         }
         
+        if (state.images.length >= 10) {
+            showAlert('يمكنك رفع 10 صور كحد أقصى', 'warning');
+            return;
+        }
+        
         const reader = new FileReader();
         reader.onload = (e) => {
             const imageData = {
@@ -254,7 +206,6 @@ function handleFiles(files) {
         reader.readAsDataURL(file);
     });
     
-    // إعادة تعيين المدخل لرفع نفس الصور مرة أخرى
     DOM.imageInput.value = '';
 }
 
@@ -266,14 +217,13 @@ function renderImagePreview() {
     }
     
     DOM.imagePreview.innerHTML = state.images.map((image, index) => `
-        <div class="preview-item" data-index="${index}">
+        <div class="preview-item">
             <img src="${image.data}" alt="Preview ${index + 1}" loading="lazy">
             <div class="preview-actions">
-                <button class="btn-set-main" onclick="setAsMain(${index})" 
-                        ${image.isMain ? 'disabled' : ''}>
-                    ${image.isMain ? '✅ رئيسية' : '⭐ تعيين رئيسية'}
+                <button class="preview-btn set-main" onclick="setAsMain(${index})">
+                    <i class="fas ${image.isMain ? 'fa-check' : 'fa-star'}"></i>
                 </button>
-                <button class="btn-remove" onclick="removeImage(${index})">
+                <button class="preview-btn remove" onclick="removeImage(${index})">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -292,7 +242,7 @@ function setAsMain(index) {
 // إزالة صورة
 function removeImage(index) {
     state.images.splice(index, 1);
-    if (state.images.length > 0) {
+    if (state.images.length > 0 && !state.images.some(img => img.isMain)) {
         state.images[0].isMain = true;
     }
     renderImagePreview();
@@ -301,7 +251,11 @@ function removeImage(index) {
 // جلب الإحصائيات
 async function loadStats() {
     try {
-        const response = await fetch('/api/stats');
+        const response = await fetch('/api/stats', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
         if (response.ok) {
             state.stats = await response.json();
             updateStatsUI();
@@ -314,9 +268,9 @@ async function loadStats() {
 
 // تحديث واجهة الإحصائيات
 function updateStatsUI() {
-    DOM.totalProducts.querySelector('.stat-number').textContent = state.stats.totalProducts || 0;
-    DOM.totalOrders.querySelector('.stat-number').textContent = state.stats.totalOrders || 0;
-    DOM.totalSales.querySelector('.stat-number').textContent = (state.stats.totalSales || 0).toFixed(2);
+    DOM.totalProducts.textContent = state.stats.totalProducts || 0;
+    DOM.totalOrders.textContent = state.stats.totalOrders || 0;
+    DOM.totalSales.textContent = (state.stats.totalSales || 0).toFixed(2);
 }
 
 // معالجة إضافة منتج
@@ -379,8 +333,8 @@ async function handleAddProduct(e) {
             await loadProducts();
             await loadStats();
             
-            // تمرير إلى قسم المنتجات
-            document.querySelector('.products-section').scrollIntoView({ behavior: 'smooth' });
+            // الانتقال إلى قسم المنتجات
+            showSection('products-section', document.querySelector('.nav-item:nth-child(1)'));
         } else {
             const error = await response.json();
             showAlert(`خطأ: ${error.error || 'فشل إضافة المنتج'}`, 'error');
@@ -405,37 +359,35 @@ function resetForm() {
     renderTags('sizes', DOM.sizesTags);
     renderTags('features', DOM.featuresTags);
     renderImagePreview();
-    
-    // إعادة زر الإضافة
-    const submitBtn = DOM.addProductForm.querySelector('button[type="submit"]');
-    submitBtn.innerHTML = '<i class="fas fa-save"></i> إضافة المنتج';
-    submitBtn.className = 'btn btn-primary btn-block';
 }
 
 // جلب المنتجات
 async function loadProducts() {
     try {
-        DOM.loadingProducts.style.display = 'flex';
+        showLoading('products-container');
         
-        const response = await fetch('/api/products');
+        const response = await fetch('/api/products', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
         if (response.ok) {
             state.products = await response.json();
             renderProducts();
+        } else {
+            showEmptyState('products-container', 'لا توجد منتجات', 'ابدأ بإضافة أول منتج');
         }
     } catch (error) {
         console.error('Error loading products:', error);
         showAlert('خطأ في تحميل المنتجات', 'error');
-    } finally {
-        DOM.loadingProducts.style.display = 'none';
+        showEmptyState('products-container', 'خطأ في التحميل', 'حاول مرة أخرى');
     }
 }
 
-// عرض المنتجات مع الصور المصغرة
+// عرض المنتجات
 function renderProducts() {
     const searchTerm = DOM.productSearch.value.toLowerCase();
-    const category = DOM.categoryFilter.value;
-    const stockFilter = DOM.stockFilter.value;
-    const sortBy = DOM.sortProducts.value;
     
     let filteredProducts = [...state.products];
     
@@ -449,71 +401,34 @@ function renderProducts() {
         );
     }
     
-    // التصفية حسب الفئة
-    if (category) {
-        filteredProducts = filteredProducts.filter(product => product.category === category);
-    }
-    
-    // التصفية حسب الكمية
-    if (stockFilter === 'in-stock') {
-        filteredProducts = filteredProducts.filter(product => product.stock > 0);
-    } else if (stockFilter === 'out-of-stock') {
-        filteredProducts = filteredProducts.filter(product => product.stock === 0);
-    } else if (stockFilter === 'low-stock') {
-        filteredProducts = filteredProducts.filter(product => product.stock > 0 && product.stock <= 10);
-    }
-    
-    // الترتيب
-    switch (sortBy) {
-        case 'name':
-            filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-            break;
-        case 'price-high':
-            filteredProducts.sort((a, b) => b.price - a.price);
-            break;
-        case 'price-low':
-            filteredProducts.sort((a, b) => a.price - b.price);
-            break;
-        case 'oldest':
-            filteredProducts.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
-            break;
-        case 'newest':
-        default:
-            filteredProducts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    }
-    
-    DOM.productCount.textContent = filteredProducts.length;
-    
     if (filteredProducts.length === 0) {
-        DOM.productsContainer.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-box-open"></i>
-                <h3>لا توجد منتجات</h3>
-                <p>${searchTerm || category || stockFilter ? 'جرب تغيير عوامل التصفية' : 'ابدأ بإضافة أول منتج'}</p>
-            </div>
-        `;
+        showEmptyState('products-container', 
+            'لا توجد منتجات', 
+            searchTerm ? 'جرب تغيير كلمة البحث' : 'ابدأ بإضافة أول منتج'
+        );
         return;
     }
     
-    // عرض المنتجات مع الصور المصغرة
     DOM.productsContainer.innerHTML = filteredProducts.map(product => `
         <div class="product-card" data-id="${product._id}">
-            <div class="product-header">
-                ${product.discount > 0 ? 
-                    `<span class="discount-badge"><i class="fas fa-percentage"></i> ${product.discount}%</span>` : ''
-                }
-                <span class="views-badge">
-                    <i class="fas fa-eye"></i> ${product.views || 0}
-                </span>
-            </div>
             <div class="product-image" onclick="viewProductDetails('${product._id}')">
                 ${getProductImage(product)}
+                <div class="product-badges">
+                    ${product.discount > 0 ? `
+                        <div class="badge discount">
+                            <i class="fas fa-percentage"></i>
+                            ${product.discount}%
+                        </div>
+                    ` : ''}
+                    <div class="badge stock ${getStockClass(product.stock)}">
+                        <i class="fas fa-box"></i>
+                        ${product.stock} وحدة
+                    </div>
+                </div>
             </div>
             <div class="product-info">
-                <h3 class="product-title" onclick="viewProductDetails('${product._id}')">
-                    ${product.name}
-                </h3>
-                <p class="product-description">${product.description.substring(0, 80)}${product.description.length > 80 ? '...' : ''}</p>
+                <h3 class="product-title">${product.name}</h3>
+                <p class="product-description">${product.description.substring(0, 60)}${product.description.length > 60 ? '...' : ''}</p>
                 <div class="product-price">
                     ${product.discount > 0 ? `
                         <span class="original-price">
@@ -525,29 +440,20 @@ function renderProducts() {
                     </span>
                 </div>
                 <div class="product-meta">
-                    <span class="product-category">${product.category}</span>
-                    <span class="product-stock ${product.stock === 0 ? 'out-of-stock' : product.stock <= 10 ? 'low-stock' : ''}">
-                        ${product.stock} وحدة
+                    <span class="category-tag">${product.category}</span>
+                    <span class="stock-status ${getStockClass(product.stock)}">
+                        <i class="fas ${getStockIcon(product.stock)}"></i>
+                        ${getStockText(product.stock)}
                     </span>
                 </div>
-                ${product.colors && product.colors.length > 0 ? `
-                    <div class="product-tags">
-                        ${product.colors.slice(0, 3).map(color => 
-                            `<span class="tag" title="${color}">${color}</span>`
-                        ).join('')}
-                        ${product.colors.length > 3 ? 
-                            `<span class="tag">+${product.colors.length - 3}</span>` : ''
-                        }
-                    </div>
-                ` : ''}
                 <div class="product-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="editProduct('${product._id}')" title="تعديل">
+                    <button class="btn btn-primary btn-sm" onclick="editProduct('${product._id}')">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn btn-danger btn-sm" onclick="deleteProduct('${product._id}')" title="حذف">
+                    <button class="btn btn-danger btn-sm" onclick="deleteProduct('${product._id}')">
                         <i class="fas fa-trash"></i>
                     </button>
-                    <button class="btn btn-info btn-sm" onclick="copyProductLink('${product.slug || product._id}')" title="نسخ الرابط">
+                    <button class="btn btn-success btn-sm" onclick="copyProductLink('${product.slug || product._id}')">
                         <i class="fas fa-link"></i>
                     </button>
                 </div>
@@ -564,7 +470,7 @@ function getProductImage(product) {
         const mainImage = product.images.find(img => img.isMain) || product.images[0];
         return `<img src="${mainImage.data}" alt="${product.name}" loading="lazy">`;
     } else {
-        return `<i class="fas fa-box" style="font-size: 3rem; color: #ccc;"></i>`;
+        return `<i class="fas fa-box" style="font-size: 3rem; color: rgba(255,255,255,0.8);"></i>`;
     }
 }
 
@@ -577,134 +483,148 @@ function calculateDiscountedPrice(product) {
     return product.price.toFixed(2);
 }
 
+// الحصول على فئة الكمية
+function getStockClass(stock) {
+    if (stock === 0) return 'out-stock';
+    if (stock <= 10) return 'low-stock';
+    return 'in-stock';
+}
+
+// الحصول على أيقونة الكمية
+function getStockIcon(stock) {
+    if (stock === 0) return 'fa-times-circle';
+    if (stock <= 10) return 'fa-exclamation-circle';
+    return 'fa-check-circle';
+}
+
+// الحصول على نص الكمية
+function getStockText(stock) {
+    if (stock === 0) return 'نفذ';
+    if (stock <= 10) return 'قليل';
+    return 'متوفر';
+}
+
 // عرض تفاصيل المنتج
 async function viewProductDetails(productId) {
     try {
-        const response = await fetch(`/api/products/${productId}`);
+        const response = await fetch(`/api/products/${productId}`, {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
         if (response.ok) {
             const product = await response.json();
             
             DOM.productFullDetails.innerHTML = `
-                <div class="product-detail-content">
-                    <div class="product-detail-header">
-                        <h2>${product.name}</h2>
-                        <div class="product-meta">
-                            <span class="category">${product.category}</span>
-                            <span class="views"><i class="fas fa-eye"></i> ${product.views || 0} مشاهدة</span>
-                            <span class="stock ${product.stock === 0 ? 'out-of-stock' : ''}">
-                                ${product.stock} وحدة متاحة
+                <div style="display: grid; gap: 25px;">
+                    <div>
+                        <h3 style="font-size: 1.3rem; margin-bottom: 10px; color: var(--dark);">${product.name}</h3>
+                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                            <span class="category-tag">${product.category}</span>
+                            <span class="stock-status ${getStockClass(product.stock)}">
+                                <i class="fas ${getStockIcon(product.stock)}"></i>
+                                ${product.stock} وحدة
+                            </span>
+                            <span style="background: rgba(67, 97, 238, 0.1); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+                                <i class="fas fa-eye"></i> ${product.views || 0}
                             </span>
                         </div>
                     </div>
                     
-                    <div class="product-detail-images">
-                        ${product.images && product.images.length > 0 ? `
-                            <div class="main-image" id="main-product-image">
+                    ${product.images && product.images.length > 0 ? `
+                        <div style="border-radius: 15px; overflow: hidden; background: #f8fafc; padding: 20px;">
+                            <div style="position: relative; height: 250px; margin-bottom: 15px;">
                                 <img src="${product.images.find(img => img.isMain)?.data || product.images[0].data}" 
-                                     alt="${product.name}">
+                                     alt="${product.name}"
+                                     style="width: 100%; height: 100%; object-fit: contain;">
                             </div>
-                            <div class="thumbnails">
+                            <div style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0;">
                                 ${product.images.map((img, index) => `
-                                    <div class="thumbnail ${img.isMain ? 'active' : ''}" 
-                                         onclick="changeDetailImage(this, '${img.data}')"
-                                         title="صورة ${index + 1}">
-                                        <img src="${img.data}" alt="Thumbnail ${index + 1}" loading="lazy">
-                                    </div>
+                                    <img src="${img.data}" 
+                                         alt="صورة ${index + 1}"
+                                         style="width: 80px; height: 80px; object-fit: cover; border-radius: 10px; cursor: pointer; border: 2px solid ${img.isMain ? 'var(--primary)' : 'transparent'}"
+                                         onclick="changeDetailImage(this, '${img.data}')">
                                 `).join('')}
                             </div>
-                        ` : `
-                            <div class="no-image">
-                                <i class="fas fa-image" style="font-size: 5rem; color: #ccc;"></i>
-                                <p>لا توجد صور للمنتج</p>
-                            </div>
-                        `}
-                    </div>
+                        </div>
+                    ` : ''}
                     
-                    <div class="product-detail-info">
-                        <div class="price-section">
-                            <div class="price">
+                    <div style="display: grid; gap: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: linear-gradient(135deg, #f8fafc, #e2e8f0); padding: 20px; border-radius: 15px;">
+                            <div>
                                 ${product.discount > 0 ? `
-                                    <span class="original-price">
+                                    <div style="font-size: 0.9rem; color: var(--gray); text-decoration: line-through; margin-bottom: 5px;">
                                         ${(product.originalPrice || product.price).toFixed(2)} دج
-                                    </span>
+                                    </div>
                                 ` : ''}
-                                <span class="current-price">
+                                <div style="font-size: 1.8rem; font-weight: 700; color: var(--primary);">
                                     ${calculateDiscountedPrice(product)} دج
-                                </span>
+                                </div>
                                 ${product.discount > 0 ? `
-                                    <span class="discount-badge">${product.discount}% خصم</span>
+                                    <div style="background: var(--danger); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9rem; display: inline-block; margin-top: 5px;">
+                                        خصم ${product.discount}%
+                                    </div>
                                 ` : ''}
                             </div>
-                            <div class="product-link">
-                                <input type="text" id="product-link-input" 
-                                       value="${window.location.origin}/product.html?product=${product.slug || product._id}" 
-                                       readonly>
-                                <button class="btn btn-sm" onclick="copyToClipboard('product-link-input')">
-                                    <i class="fas fa-copy"></i> نسخ الرابط
-                                </button>
-                            </div>
+                            <button class="btn btn-primary" onclick="copyProductLink('${product.slug || product._id}')">
+                                <i class="fas fa-link"></i> نسخ الرابط
+                            </button>
                         </div>
                         
-                        <div class="description-section">
-                            <h3>وصف المنتج</h3>
-                            <p>${product.description}</p>
+                        <div>
+                            <h4 style="font-size: 1.1rem; margin-bottom: 15px; color: var(--dark);">وصف المنتج</h4>
+                            <p style="line-height: 1.8; color: var(--gray);">${product.description}</p>
                         </div>
                         
                         ${product.features && product.features.length > 0 ? `
-                            <div class="features-section">
-                                <h3>مميزات المنتج</h3>
-                                <ul>
+                            <div>
+                                <h4 style="font-size: 1.1rem; margin-bottom: 15px; color: var(--dark);">المميزات</h4>
+                                <ul style="list-style: none; display: grid; gap: 10px;">
                                     ${product.features.map(feature => `
-                                        <li><i class="fas fa-check"></i> ${feature}</li>
+                                        <li style="display: flex; align-items: center; gap: 10px; padding: 12px; background: #f8fafc; border-radius: 10px;">
+                                            <i class="fas fa-check" style="color: var(--success);"></i>
+                                            <span>${feature}</span>
+                                        </li>
                                     `).join('')}
                                 </ul>
                             </div>
                         ` : ''}
                         
-                        ${product.colors && product.colors.length > 0 ? `
-                            <div class="colors-section">
-                                <h3>الألوان المتاحة</h3>
-                                <div class="colors-list">
-                                    ${product.colors.map(color => `
-                                        <span class="color-item">${color}</span>
-                                    `).join('')}
-                                </div>
+                        ${(product.colors && product.colors.length > 0) || (product.sizes && product.sizes.length > 0) ? `
+                            <div style="display: grid; grid-template-columns: ${product.colors && product.sizes ? '1fr 1fr' : '1fr'}; gap: 20px;">
+                                ${product.colors && product.colors.length > 0 ? `
+                                    <div>
+                                        <h4 style="font-size: 1.1rem; margin-bottom: 15px; color: var(--dark);">الألوان</h4>
+                                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                            ${product.colors.map(color => `
+                                                <span style="background: rgba(67, 97, 238, 0.1); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem;">
+                                                    ${color}
+                                                </span>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
+                                
+                                ${product.sizes && product.sizes.length > 0 ? `
+                                    <div>
+                                        <h4 style="font-size: 1.1rem; margin-bottom: 15px; color: var(--dark);">المقاسات</h4>
+                                        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                            ${product.sizes.map(size => `
+                                                <span style="background: rgba(76, 201, 240, 0.1); color: var(--secondary); padding: 8px 16px; border-radius: 20px; font-size: 0.9rem;">
+                                                    ${size}
+                                                </span>
+                                            `).join('')}
+                                        </div>
+                                    </div>
+                                ` : ''}
                             </div>
                         ` : ''}
-                        
-                        ${product.sizes && product.sizes.length > 0 ? `
-                            <div class="sizes-section">
-                                <h3>المقاسات المتاحة</h3>
-                                <div class="sizes-list">
-                                    ${product.sizes.map(size => `
-                                        <span class="size-item">${size}</span>
-                                    `).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                        
-                        <div class="product-stats">
-                            <div class="stat-item">
-                                <i class="fas fa-box"></i>
-                                <span>الكمية: ${product.stock}</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="fas fa-eye"></i>
-                                <span>المشاهدات: ${product.views || 0}</span>
-                            </div>
-                            <div class="stat-item">
-                                <i class="fas fa-calendar"></i>
-                                <span>أُضيف في: ${new Date(product.createdAt).toLocaleDateString('ar-SA')}</span>
-                            </div>
-                        </div>
                     </div>
                 </div>
             `;
             
-            DOM.productDetailModal.style.display = 'block';
-            
-            // إضافة سحب للصور على الهواتف
-            setupImageSwipe();
+            showModal('product-detail-modal');
         }
     } catch (error) {
         console.error('Error loading product details:', error);
@@ -714,61 +634,21 @@ async function viewProductDetails(productId) {
 
 // تغيير الصورة في التفاصيل
 function changeDetailImage(element, imageData) {
-    const mainImage = document.getElementById('main-product-image');
-    if (mainImage) {
-        const img = mainImage.querySelector('img');
-        img.src = imageData;
+    const mainImg = element.closest('.modal-body').querySelector('img[style*="object-fit: contain"]');
+    if (mainImg) {
+        mainImg.src = imageData;
+        mainImg.style.opacity = '0';
+        setTimeout(() => {
+            mainImg.style.opacity = '1';
+            mainImg.style.transition = 'opacity 0.3s';
+        }, 10);
     }
     
-    // تحديث حالة الصور المصغرة
-    document.querySelectorAll('.thumbnail').forEach(thumb => {
-        thumb.classList.remove('active');
+    // تحديث الحدود
+    element.closest('.modal-body').querySelectorAll('img[style*="border:"]').forEach(img => {
+        img.style.border = '2px solid transparent';
     });
-    element.classList.add('active');
-}
-
-// إعداد سحب الصور على الهواتف
-function setupImageSwipe() {
-    const mainImage = document.getElementById('main-product-image');
-    if (!mainImage) return;
-    
-    let startX = 0;
-    let currentIndex = 0;
-    const thumbnails = document.querySelectorAll('.thumbnail');
-    const thumbnailImages = Array.from(thumbnails).map(thumb => 
-        thumb.querySelector('img').src
-    );
-    
-    mainImage.addEventListener('touchstart', (e) => {
-        startX = e.touches[0].clientX;
-    });
-    
-    mainImage.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-    });
-    
-    mainImage.addEventListener('touchend', (e) => {
-        const endX = e.changedTouches[0].clientX;
-        const diffX = startX - endX;
-        
-        if (Math.abs(diffX) > 50) { // حد السحب
-            if (diffX > 0 && currentIndex < thumbnailImages.length - 1) {
-                // سحب لليسار - الصورة التالية
-                currentIndex++;
-            } else if (diffX < 0 && currentIndex > 0) {
-                // سحب لليمين - الصورة السابقة
-                currentIndex--;
-            }
-            
-            const img = mainImage.querySelector('img');
-            img.src = thumbnailImages[currentIndex];
-            
-            // تحديث الصورة المصغرة النشطة
-            thumbnails.forEach((thumb, index) => {
-                thumb.classList.toggle('active', index === currentIndex);
-            });
-        }
-    });
+    element.style.border = '2px solid var(--primary)';
 }
 
 // حذف منتج
@@ -828,10 +708,10 @@ function editProduct(productId) {
     // تغيير زر الإضافة إلى تحديث
     const submitBtn = DOM.addProductForm.querySelector('button[type="submit"]');
     submitBtn.innerHTML = '<i class="fas fa-save"></i> تحديث المنتج';
-    submitBtn.className = 'btn btn-warning btn-block';
+    submitBtn.className = 'btn btn-primary btn-block';
     
-    // تمرير إلى قسم المنتجات
-    document.querySelector('.add-product-section').scrollIntoView({ behavior: 'smooth' });
+    // الانتقال إلى قسم إضافة المنتج
+    showSection('add-product-section', document.querySelector('.nav-item:nth-child(3)'));
 }
 
 // تحديث منتج
@@ -869,6 +749,9 @@ async function updateProduct(productId) {
             resetForm();
             await loadProducts();
             await loadStats();
+            
+            // الانتقال إلى قسم المنتجات
+            showSection('products-section', document.querySelector('.nav-item:nth-child(1)'));
         } else {
             const error = await response.json();
             showAlert(`خطأ: ${error.error || 'فشل تحديث المنتج'}`, 'error');
@@ -881,38 +764,32 @@ async function updateProduct(productId) {
 // تحميل الطلبات
 async function loadOrders() {
     try {
-        const response = await fetch('/api/orders');
+        showLoading('orders-container');
+        
+        const response = await fetch('/api/orders', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
         if (response.ok) {
             state.orders = await response.json();
             renderOrders();
+        } else {
+            showEmptyState('orders-container', 'لا توجد طلبات', 'لم يتم استلام أي طلبات بعد');
         }
     } catch (error) {
         console.error('Error loading orders:', error);
         showAlert('خطأ في تحميل الطلبات', 'error');
+        showEmptyState('orders-container', 'خطأ في التحميل', 'حاول مرة أخرى');
     }
 }
 
-// عرض الطلبات مع أزرار الحالة
+// عرض الطلبات
 function renderOrders() {
-    const statusFilter = DOM.statusFilter.value;
-    const dateFilter = DOM.dateFilter.value;
     const searchTerm = DOM.orderSearch.value.toLowerCase();
     
-    let filteredOrders = state.orders;
-    
-    // التصفية حسب الحالة
-    if (statusFilter) {
-        filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
-    }
-    
-    // التصفية حسب التاريخ
-    if (dateFilter) {
-        const filterDate = new Date(dateFilter);
-        filteredOrders = filteredOrders.filter(order => {
-            const orderDate = new Date(order.createdAt);
-            return orderDate.toDateString() === filterDate.toDateString();
-        });
-    }
+    let filteredOrders = [...state.orders];
     
     // التصفية حسب البحث
     if (searchTerm) {
@@ -924,123 +801,98 @@ function renderOrders() {
         );
     }
     
-    DOM.orderCount.textContent = filteredOrders.length;
-    
     if (filteredOrders.length === 0) {
-        DOM.ordersContainer.innerHTML = `
-            <tr>
-                <td colspan="7" class="empty-state-cell">
-                    <div class="empty-state">
-                        <i class="fas fa-shopping-cart"></i>
-                        <h3>لا توجد طلبات</h3>
-                        <p>${searchTerm || statusFilter || dateFilter ? 'جرب تغيير عوامل التصفية' : 'لم يتم استلام أي طلبات بعد'}</p>
-                    </div>
-                </td>
-            </tr>
-        `;
+        showEmptyState('orders-container', 
+            'لا توجد طلبات', 
+            searchTerm ? 'جرب تغيير كلمة البحث' : 'لم يتم استلام أي طلبات بعد'
+        );
         return;
     }
     
-    DOM.ordersContainer.innerHTML = filteredOrders.map(order => `
-        <tr>
-            <td>
-                <strong>${order.orderId}</strong>
-                <br>
-                <small class="text-muted">${new Date(order.createdAt).toLocaleDateString('ar-SA')}</small>
-            </td>
-            <td>
-                <div class="customer-info">
-                    <strong>${order.customer.fullName}</strong>
-                    <div class="customer-details">
-                        <span><i class="fas fa-phone"></i> ${order.customer.phone}</span>
-                        <br>
-                        <span><i class="fas fa-map-marker-alt"></i> ${order.customer.wilaya}</span>
+    DOM.ordersContainer.innerHTML = `
+        <div style="display: grid; gap: 15px;">
+            ${filteredOrders.map(order => `
+                <div class="product-card" style="padding: 20px;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--dark); margin-bottom: 5px;">
+                                طلب #${order.orderId}
+                            </h3>
+                            <div style="font-size: 0.9rem; color: var(--gray);">
+                                ${new Date(order.createdAt).toLocaleDateString('ar-SA')}
+                            </div>
+                        </div>
+                        <span class="status-badge status-${order.status}" style="padding: 6px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                            ${getStatusText(order.status)}
+                        </span>
+                    </div>
+                    
+                    <div style="display: grid; gap: 10px; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-user" style="color: var(--primary);"></i>
+                            <span>${order.customer.fullName}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-phone" style="color: var(--primary);"></i>
+                            <a href="tel:${order.customer.phone}" style="color: var(--primary); text-decoration: none;">
+                                ${order.customer.phone}
+                            </a>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-map-marker-alt" style="color: var(--primary);"></i>
+                            <span>${order.customer.wilaya}</span>
+                        </div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-top: 15px; border-top: 1px solid var(--gray-light);">
+                        <div>
+                            <div style="font-size: 0.9rem; color: var(--gray);">عدد المنتجات</div>
+                            <div style="font-size: 1.1rem; font-weight: 700;">${order.products.length}</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 0.9rem; color: var(--gray);">المجموع</div>
+                            <div style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">
+                                ${order.total.toFixed(2)} دج
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+                        <button class="btn btn-primary btn-sm" onclick="viewOrderDetails('${order._id}')">
+                            <i class="fas fa-eye"></i> التفاصيل
+                        </button>
+                        <button class="btn btn-success btn-sm" onclick="updateOrderStatus('${order._id}', '${getNextStatus(order.status)}')">
+                            <i class="fas fa-check"></i> ${getNextStatusText(order.status)}
+                        </button>
                     </div>
                 </div>
-            </td>
-            <td>
-                <div class="order-products-summary">
-                    ${order.products.slice(0, 2).map(item => `
-                        <div class="product-summary">
-                            <span class="quantity">${item.quantity}x</span>
-                            <span class="product-name">${item.productId?.name || 'منتج محذوف'}</span>
-                        </div>
-                    `).join('')}
-                    ${order.products.length > 2 ? `
-                        <div class="more-products">
-                            +${order.products.length - 2} منتجات أخرى
-                        </div>
-                    ` : ''}
-                </div>
-            </td>
-            <td>
-                <strong>${order.total.toFixed(2)} دج</strong>
-                <br>
-                <small class="text-muted">شامل التوصيل: ${order.shipping} دج</small>
-            </td>
-            <td>
-                <div class="status-buttons" data-order-id="${order._id}">
-                    <button class="status-btn ${getStatusClass('pending')} ${order.status === 'pending' ? 'active' : ''}" 
-                            onclick="updateOrderStatus('${order._id}', 'pending')" 
-                            title="قيد الانتظار">
-                        <i class="fas fa-clock"></i>
-                        <span class="status-text">قيد الانتظار</span>
-                    </button>
-                    <button class="status-btn ${getStatusClass('confirmed')} ${order.status === 'confirmed' ? 'active' : ''}" 
-                            onclick="updateOrderStatus('${order._id}', 'confirmed')" 
-                            title="مؤكد">
-                        <i class="fas fa-check-circle"></i>
-                        <span class="status-text">مؤكد</span>
-                    </button>
-                    <button class="status-btn ${getStatusClass('shipped')} ${order.status === 'shipped' ? 'active' : ''}" 
-                            onclick="updateOrderStatus('${order._id}', 'shipped')" 
-                            title="مرسل">
-                        <i class="fas fa-shipping-fast"></i>
-                        <span class="status-text">مرسل</span>
-                    </button>
-                    <button class="status-btn ${getStatusClass('delivered')} ${order.status === 'delivered' ? 'active' : ''}" 
-                            onclick="updateOrderStatus('${order._id}', 'delivered')" 
-                            title="مستلم">
-                        <i class="fas fa-box-open"></i>
-                        <span class="status-text">مستلم</span>
-                    </button>
-                    <button class="status-btn ${getStatusClass('cancelled')} ${order.status === 'cancelled' ? 'active' : ''}" 
-                            onclick="updateOrderStatus('${order._id}', 'cancelled')" 
-                            title="ملغي">
-                        <i class="fas fa-times-circle"></i>
-                        <span class="status-text">ملغي</span>
-                    </button>
-                </div>
-            </td>
-            <td>${new Date(order.createdAt).toLocaleDateString('ar-SA')}</td>
-            <td>
-                <div class="order-actions">
-                    <button class="btn btn-secondary btn-sm" onclick="viewOrderDetails('${order._id}')" title="عرض التفاصيل">
-                        <i class="fas fa-eye"></i>
-                    </button>
-                    <button class="btn btn-primary btn-sm" onclick="printShippingForOrder('${order._id}')" title="طباعة ورقة التوصيل">
-                        <i class="fas fa-print"></i>
-                    </button>
-                    <button class="btn btn-info btn-sm" onclick="contactCustomer('${order.customer.phone}')" title="الاتصال بالعميل">
-                        <i class="fas fa-phone"></i>
-                    </button>
-                </div>
-            </td>
-        </tr>
-    `).join('');
+            `).join('')}
+        </div>
+    `;
 }
 
-// الحصول على فئة الحالة
-function getStatusClass(status) {
-    const classMap = {
-        'pending': 'pending',
-        'confirmed': 'confirmed',
-        'shipped': 'shipped',
+// الحصول على الحالة التالية
+function getNextStatus(currentStatus) {
+    const statusFlow = {
+        'pending': 'confirmed',
+        'confirmed': 'shipped',
+        'shipped': 'delivered',
         'delivered': 'delivered',
-        'cancelled': 'cancelled',
-        'returned': 'returned'
+        'cancelled': 'cancelled'
     };
-    return classMap[status] || 'pending';
+    return statusFlow[currentStatus] || 'confirmed';
+}
+
+// الحصول على نص الحالة التالية
+function getNextStatusText(currentStatus) {
+    const statusTexts = {
+        'pending': 'تأكيد',
+        'confirmed': 'شحن',
+        'shipped': 'تسليم',
+        'delivered': 'تم التسليم',
+        'cancelled': 'ملغي'
+    };
+    return statusTexts[currentStatus] || 'تأكيد';
 }
 
 // الحصول على نص الحالة
@@ -1089,157 +941,122 @@ async function viewOrderDetails(orderId) {
     }
     
     DOM.orderDetails.innerHTML = `
-        <div class="order-details-content">
-            <div class="order-header">
-                <h3>طلب #${order.orderId}</h3>
-                <div class="order-status-info">
-                    <span class="status-badge status-${order.status}">
-                        ${getStatusText(order.status)}
-                    </span>
-                    <span class="order-date">
+        <div style="display: grid; gap: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h3 style="font-size: 1.3rem; font-weight: 700; color: var(--dark); margin-bottom: 5px;">
+                        طلب #${order.orderId}
+                    </h3>
+                    <div style="font-size: 0.9rem; color: var(--gray);">
                         ${new Date(order.createdAt).toLocaleString('ar-SA')}
-                    </span>
+                    </div>
                 </div>
+                <span class="status-badge status-${order.status}" style="padding: 8px 20px; border-radius: 20px; font-size: 0.9rem; font-weight: 600;">
+                    ${getStatusText(order.status)}
+                </span>
             </div>
             
-            <div class="order-info-grid">
-                <div class="info-section">
-                    <h4><i class="fas fa-user"></i> معلومات العميل</h4>
-                    <div class="info-item">
-                        <strong>الاسم:</strong> ${order.customer.fullName}
-                    </div>
-                    <div class="info-item">
-                        <strong>الهاتف:</strong> 
-                        <a href="tel:${order.customer.phone}" class="phone-link">
-                            ${order.customer.phone}
-                        </a>
-                    </div>
-                    <div class="info-item">
-                        <strong>الولاية:</strong> ${order.customer.wilaya}
-                    </div>
-                    <div class="info-item">
-                        <strong>العنوان:</strong> ${order.customer.address}
-                    </div>
-                    ${order.customer.email ? `
-                        <div class="info-item">
-                            <strong>البريد:</strong> ${order.customer.email}
+            <div style="display: grid; gap: 20px;">
+                <div style="background: #f8fafc; padding: 20px; border-radius: 15px;">
+                    <h4 style="font-size: 1.1rem; margin-bottom: 15px; color: var(--dark);">
+                        <i class="fas fa-user" style="margin-left: 10px;"></i>
+                        معلومات العميل
+                    </h4>
+                    <div style="display: grid; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-weight: 600;">الاسم:</span>
+                            <span>${order.customer.fullName}</span>
                         </div>
-                    ` : ''}
-                    ${order.customer.notes ? `
-                        <div class="info-item">
-                            <strong>ملاحظات:</strong> ${order.customer.notes}
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-weight: 600;">الهاتف:</span>
+                            <a href="tel:${order.customer.phone}" style="color: var(--primary); text-decoration: none;">
+                                ${order.customer.phone}
+                            </a>
                         </div>
-                    ` : ''}
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-weight: 600;">الولاية:</span>
+                            <span>${order.customer.wilaya}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between;">
+                            <span style="font-weight: 600;">العنوان:</span>
+                            <span>${order.customer.address}</span>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="info-section">
-                    <h4><i class="fas fa-receipt"></i> معلومات الطلب</h4>
-                    <div class="info-item">
-                        <strong>رقم الطلب:</strong> ${order.orderId}
-                    </div>
-                    <div class="info-item">
-                        <strong>تاريخ الطلب:</strong> ${new Date(order.createdAt).toLocaleString('ar-SA')}
-                    </div>
-                    <div class="info-item">
-                        <strong>طريقة الدفع:</strong> الدفع عند الاستلام
-                    </div>
-                    <div class="info-item">
-                        <strong>سعر التوصيل:</strong> ${order.shipping} دج
-                    </div>
-                    <div class="info-item">
-                        <strong>الحالة الحالية:</strong> 
-                        <span class="status-badge status-${order.status}">
-                            ${getStatusText(order.status)}
-                        </span>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="order-products">
-                <h4><i class="fas fa-shopping-bag"></i> المنتجات (${order.products.length})</h4>
-                <table class="products-table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>المنتج</th>
-                            <th>الكمية</th>
-                            <th>اللون</th>
-                            <th>المقاس</th>
-                            <th>السعر</th>
-                            <th>المجموع</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                <div style="background: #f8fafc; padding: 20px; border-radius: 15px;">
+                    <h4 style="font-size: 1.1rem; margin-bottom: 15px; color: var(--dark);">
+                        <i class="fas fa-shopping-bag" style="margin-left: 10px;"></i>
+                        المنتجات (${order.products.length})
+                    </h4>
+                    <div style="display: grid; gap: 15px;">
                         ${order.products.map((item, index) => `
-                            <tr>
-                                <td>${index + 1}</td>
-                                <td>
-                                    <div class="product-item">
-                                        <div class="product-image-mini">
-                                            ${item.productId?.mainImage ? 
-                                                `<img src="${item.productId.mainImage}" alt="${item.productId.name}" loading="lazy">` :
-                                                `<i class="fas fa-box"></i>`
-                                            }
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-radius: 10px;">
+                                <div style="display: flex; align-items: center; gap: 15px;">
+                                    <span style="font-weight: 700; color: var(--gray);">${index + 1}</span>
+                                    <div>
+                                        <div style="font-weight: 600; margin-bottom: 5px;">${item.productId?.name || 'منتج محذوف'}</div>
+                                        <div style="font-size: 0.9rem; color: var(--gray);">
+                                            ${item.color ? `اللون: ${item.color}` : ''} ${item.size ? `المقاس: ${item.size}` : ''}
                                         </div>
-                                        <div class="product-name">${item.productId?.name || 'منتج محذوف'}</div>
                                     </div>
-                                </td>
-                                <td>${item.quantity}</td>
-                                <td>${item.color || '-'}</td>
-                                <td>${item.size || '-'}</td>
-                                <td>${item.price} دج</td>
-                                <td><strong>${(item.price * item.quantity).toFixed(2)} دج</strong></td>
-                            </tr>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-weight: 600;">${item.price} دج</div>
+                                    <div style="font-size: 0.9rem; color: var(--gray);">
+                                        × ${item.quantity}
+                                    </div>
+                                </div>
+                            </div>
                         `).join('')}
-                    </tbody>
-                </table>
-            </div>
-            
-            <div class="order-summary">
-                <h4><i class="fas fa-calculator"></i> ملخص الفاتورة</h4>
-                <div class="summary-grid">
-                    <div class="summary-item">
-                        <span>المجموع الفرعي:</span>
-                        <span>${order.subtotal.toFixed(2)} دج</span>
                     </div>
-                    <div class="summary-item">
-                        <span>التوصيل:</span>
-                        <span>${order.shipping} دج</span>
-                    </div>
-                    <div class="summary-item total">
-                        <span>المجموع الكلي:</span>
-                        <span><strong>${order.total.toFixed(2)} دج</strong></span>
+                </div>
+                
+                <div style="background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; padding: 25px; border-radius: 15px;">
+                    <h4 style="font-size: 1.1rem; margin-bottom: 20px;">
+                        <i class="fas fa-calculator" style="margin-left: 10px;"></i>
+                        ملخص الفاتورة
+                    </h4>
+                    <div style="display: grid; gap: 15px;">
+                        <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <span>المجموع الفرعي:</span>
+                            <span>${order.subtotal.toFixed(2)} دج</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.2);">
+                            <span>التوصيل:</span>
+                            <span>${order.shipping} دج</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: 700; padding-top: 10px;">
+                            <span>المجموع الكلي:</span>
+                            <span>${order.total.toFixed(2)} دج</span>
+                        </div>
                     </div>
                 </div>
             </div>
             
-            <div class="order-actions-footer">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 10px;">
                 <button class="btn btn-primary" onclick="printOrder('${order._id}')">
-                    <i class="fas fa-print"></i> طباعة الفاتورة
+                    <i class="fas fa-print"></i> طباعة
                 </button>
-                <button class="btn btn-secondary" onclick="printShippingForOrder('${order._id}')">
-                    <i class="fas fa-truck"></i> طباعة ورقة التوصيل
-                </button>
-                <button class="btn btn-info" onclick="contactCustomer('${order.customer.phone}')">
-                    <i class="fas fa-phone"></i> الاتصال بالعميل
+                <button class="btn btn-success" onclick="contactCustomer('${order.customer.phone}')">
+                    <i class="fas fa-phone"></i> الاتصال
                 </button>
             </div>
         </div>
     `;
     
-    DOM.orderModal.style.display = 'block';
+    showModal('order-modal');
 }
 
 // طباعة الطلب
 function printOrder(orderId) {
-    const printWindow = window.open('', '_blank');
     const order = state.orders.find(o => o._id === orderId);
-    
     if (!order) {
         showAlert('الطلب غير موجود', 'error');
         return;
     }
     
+    const printWindow = window.open('', '_blank');
     const printContent = `
         <!DOCTYPE html>
         <html lang="ar" dir="rtl">
@@ -1338,7 +1155,6 @@ function printOrder(orderId) {
                     <p><strong>الهاتف:</strong> ${order.customer.phone}</p>
                     <p><strong>الولاية:</strong> ${order.customer.wilaya}</p>
                     <p><strong>العنوان:</strong> ${order.customer.address}</p>
-                    ${order.customer.email ? `<p><strong>البريد:</strong> ${order.customer.email}</p>` : ''}
                 </div>
                 
                 <div class="info-section">
@@ -1410,122 +1226,6 @@ function printOrder(orderId) {
     printWindow.document.write(printContent);
     printWindow.document.close();
     printWindow.focus();
-}
-
-// طباعة ورقة التوصيل لطلب محدد
-function printShippingForOrder(orderId) {
-    const order = state.orders.find(o => o._id === orderId);
-    if (!order) {
-        showAlert('الطلب غير موجود', 'error');
-        return;
-    }
-    
-    DOM.shippingContent.innerHTML = `
-        <div class="shipping-header">
-            <h3>ورقة توصيل الطلب #${order.orderId}</h3>
-            <p>تاريخ الطلب: ${new Date(order.createdAt).toLocaleDateString('ar-SA')}</p>
-        </div>
-        
-        <div class="shipping-info">
-            <div class="info-grid">
-                <div class="info-item">
-                    <h4>معلومات العميل</h4>
-                    <p><strong>الاسم:</strong> ${order.customer.fullName}</p>
-                    <p><strong>الهاتف:</strong> ${order.customer.phone}</p>
-                    <p><strong>الولاية:</strong> ${order.customer.wilaya}</p>
-                    <p><strong>العنوان:</strong> ${order.customer.address}</p>
-                </div>
-                
-                <div class="info-item">
-                    <h4>معلومات الطلب</h4>
-                    <p><strong>رقم الطلب:</strong> ${order.orderId}</p>
-                    <p><strong>التاريخ:</strong> ${new Date(order.createdAt).toLocaleDateString('ar-SA')}</p>
-                    <p><strong>الوقت:</strong> ${new Date(order.createdAt).toLocaleTimeString('ar-SA')}</p>
-                    <p><strong>سعر التوصيل:</strong> ${order.shipping} دج</p>
-                </div>
-                
-                <div class="info-item">
-                    <h4>معلومات التوصيل</h4>
-                    <p><strong>نوع الشحنة:</strong> طرد</p>
-                    <p><strong>وزن مقدر:</strong> 1-2 كجم</p>
-                    <p><strong>الحجم:</strong> صغير/متوسط</p>
-                    <p><strong>المحتوى:</strong> بضاعة تجارية</p>
-                </div>
-            </div>
-        </div>
-        
-        <div class="shipping-products">
-            <h4>المنتجات المطلوبة</h4>
-            <table class="shipping-table">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>المنتج</th>
-                        <th>الكمية</th>
-                        <th>ملاحظات</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${order.products.map((item, index) => `
-                        <tr>
-                            <td>${index + 1}</td>
-                            <td>${item.productId?.name || 'منتج محذوف'}</td>
-                            <td>${item.quantity}</td>
-                            <td>${item.color ? `اللون: ${item.color}` : ''} ${item.size ? `المقاس: ${item.size}` : ''}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="shipping-instructions">
-            <h4>تعليمات التوصيل</h4>
-            <ol>
-                <li>التأكد من هوية المستلم قبل تسليم الطرد</li>
-                <li>التحقق من رقم الهاتف قبل التسليم</li>
-                <li>تسليم الطرد للعميل شخصياً فقط</li>
-                <li>الحصول على توقيع العميل عند الاستلام</li>
-                <li>في حالة عدم التمكن من التسليم، التواصل مع العميل مباشرة</li>
-            </ol>
-        </div>
-        
-        <div class="shipping-totals">
-            <div class="total-item">
-                <span>عدد المنتجات:</span>
-                <span>${order.products.length}</span>
-            </div>
-            <div class="total-item">
-                <span>إجمالي القيمة:</span>
-                <span>${order.total.toFixed(2)} دج</span>
-            </div>
-        </div>
-        
-        <div class="shipping-signature">
-            <h4>إيصال الاستلام</h4>
-            <p>أقر بأنني استلمت الطرد بالكامل وبحالة جيدة</p>
-            <div class="signature-line"></div>
-            <p>اسم المستلم: _____________________</p>
-            <p>التاريخ: _____________________</p>
-            <p>التوقيع: _____________________</p>
-            <div style="margin-top: 30px;">
-                <p><strong>ملاحظات الموصل:</strong></p>
-                <div class="notes-area"></div>
-            </div>
-        </div>
-    `;
-    
-    DOM.shippingModal.style.display = 'block';
-}
-
-// طباعة ورقة التوصيل
-function printShipping() {
-    const printWindow = window.open('', '_blank');
-    printWindow.document.write(DOM.shippingContent.innerHTML);
-    printWindow.document.close();
-    printWindow.focus();
-    setTimeout(() => {
-        printWindow.print();
-    }, 500);
 }
 
 // طباعة تقرير الشحن
@@ -1666,40 +1366,31 @@ function contactCustomer(phoneNumber) {
 }
 
 // تصدير المنتجات
-function exportProducts() {
-    const data = state.products.map(product => ({
-        'اسم المنتج': product.name,
-        'الفئة': product.category,
-        'السعر': product.price,
-        'الكمية': product.stock,
-        'الخصم': product.discount,
-        'المشاهدات': product.views || 0,
-        'تاريخ الإضافة': new Date(product.createdAt).toLocaleDateString('ar-SA')
-    }));
-    
-    const csv = convertToCSV(data);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    
-    if (navigator.msSaveBlob) {
-        navigator.msSaveBlob(blob, 'المنتجات.csv');
-    } else {
-        link.href = URL.createObjectURL(blob);
-        link.download = 'المنتجات.csv';
-        link.click();
+async function exportProducts() {
+    try {
+        const response = await fetch('/api/products/export', {
+            headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+        });
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'المنتجات.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showAlert('تم تصدير المنتجات بنجاح', 'success');
+        } else {
+            showAlert('خطأ في تصدير المنتجات', 'error');
+        }
+    } catch (error) {
+        showAlert('خطأ في تصدير المنتجات', 'error');
     }
-}
-
-// تحويل البيانات إلى CSV
-function convertToCSV(data) {
-    const headers = Object.keys(data[0] || {});
-    const rows = data.map(row => 
-        headers.map(header => 
-            JSON.stringify(row[header] || '')
-        ).join(',')
-    );
-    
-    return [headers.join(','), ...rows].join('\n');
 }
 
 // فلترة المنتجات
@@ -1712,42 +1403,65 @@ function filterOrders() {
     renderOrders();
 }
 
-// تحسينات للهواتف
-function setupMobileOptimizations() {
-    // إصلاح ارتفاع viewport للهواتف
-    function setViewportHeight() {
-        const vh = window.innerHeight * 0.01;
-        document.documentElement.style.setProperty('--vh', `${vh}px`);
+// إظهار قسم
+function showSection(sectionId, navItem) {
+    // إخفاء جميع الأقسام
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // إزالة النشطة من جميع عناصر التنقل
+    document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // إظهار القسم المطلوب
+    document.getElementById(sectionId).classList.add('active');
+    
+    // تفعيل عنصر التنقل
+    if (navItem) {
+        navItem.classList.add('active');
     }
     
-    setViewportHeight();
-    window.addEventListener('resize', setViewportHeight);
-    window.addEventListener('orientationchange', setViewportHeight);
-    
-    // تحسين تجربة اللمس
-    document.addEventListener('touchstart', () => {}, { passive: true });
-    
-    // إضافة تأثيرات للمس
-    document.querySelectorAll('.btn, .product-card, .status-btn').forEach(el => {
-        el.addEventListener('touchstart', () => {
-            el.classList.add('touch-active');
-        });
-        
-        el.addEventListener('touchend', () => {
-            setTimeout(() => {
-                el.classList.remove('touch-active');
-            }, 150);
-        });
-    });
-    
-    // منع التكبير في حقول الإدخال على الهواتف
-    document.querySelectorAll('input, textarea, select').forEach(el => {
-        el.addEventListener('focus', () => {
-            setTimeout(() => {
-                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 300);
-        });
-    });
+    // التمرير إلى الأعلى
+    document.querySelector('.main-content').scrollTop = 0;
+}
+
+// إظهار المودال
+function showModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+
+// إغلاق المودال
+function closeModal(modalId) {
+    const modal = document.getElementById(modalId);
+    modal.classList.remove('show');
+    document.body.style.overflow = '';
+}
+
+// إظهار حالة التحميل
+function showLoading(containerId) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = `
+        <div class="loading">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>جاري التحميل...</p>
+        </div>
+    `;
+}
+
+// إظهار حالة فارغة
+function showEmptyState(containerId, title, message) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = `
+        <div class="empty-state">
+            <i class="fas fa-inbox"></i>
+            <h3>${title}</h3>
+            <p>${message}</p>
+        </div>
+    `;
 }
 
 // عرض تنبيه
@@ -1757,7 +1471,7 @@ function showAlert(message, type) {
     existingAlerts.forEach(alert => alert.remove());
     
     const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
+    alertDiv.className = `alert ${type}`;
     alertDiv.innerHTML = `
         <i class="fas fa-${getAlertIcon(type)}"></i>
         <span>${message}</span>
@@ -1786,13 +1500,45 @@ function getAlertIcon(type) {
     return icons[type] || 'info-circle';
 }
 
-// التحديث التلقائي
-function startAutoRefresh() {
-    setInterval(async () => {
-        await loadOrders();
-        await loadStats();
-        updateCurrentDate();
-    }, 60000); // كل دقيقة
+// تحسينات للهواتف
+function setupMobileOptimizations() {
+    // إصلاح ارتفاع viewport للهواتف
+    function setViewportHeight() {
+        const vh = window.innerHeight * 0.01;
+        document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    
+    setViewportHeight();
+    window.addEventListener('resize', setViewportHeight);
+    window.addEventListener('orientationchange', setViewportHeight);
+    
+    // إضافة Service Worker للتطبيق
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/sw.js').then(registration => {
+                console.log('ServiceWorker registration successful');
+            }).catch(err => {
+                console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+    }
+    
+    // إضافة تطبيقات محمولة
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+        document.body.classList.add('standalone');
+    }
+    
+    // منع التكبير في حقول الإدخال على الهواتف
+    document.querySelectorAll('input, textarea, select').forEach(el => {
+        el.addEventListener('focus', () => {
+            setTimeout(() => {
+                el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
+    });
+    
+    // تحسين شريط اللمس
+    document.addEventListener('touchstart', () => {}, { passive: true });
 }
 
 // وظيفة debounce
@@ -1806,21 +1552,6 @@ function debounce(func, wait) {
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
-}
-
-// نسخ إلى الحافظة
-function copyToClipboard(inputId) {
-    const input = document.getElementById(inputId);
-    input.select();
-    input.setSelectionRange(0, 99999);
-    
-    try {
-        navigator.clipboard.writeText(input.value);
-        showAlert('تم نسخ الرابط إلى الحافظة', 'success');
-    } catch (err) {
-        document.execCommand('copy');
-        showAlert('تم نسخ الرابط إلى الحافظة', 'success');
-    }
 }
 
 // نسخ رابط المنتج
@@ -1845,20 +1576,14 @@ async function refreshOrders() {
     showAlert('تم تحديث الطلبات', 'success');
 }
 
-// تبديل عرض القسم
-function toggleSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    const content = section.querySelector('.section-content');
-    const icon = section.querySelector('.fa-chevron-up');
-    
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        icon.className = 'fas fa-chevron-up';
-    } else {
-        content.style.display = 'none';
-        icon.className = 'fas fa-chevron-down';
-    }
-}
-
 // تشغيل التطبيق
 document.addEventListener('DOMContentLoaded', init);
+
+// منع إغلاق الصفحة عند التحديث
+window.addEventListener('beforeunload', (e) => {
+    if (state.images.length > 0) {
+        e.preventDefault();
+        e.returnValue = 'لديك صور غير محفوظة. هل تريد حقاً مغادرة الصفحة؟';
+        return 'لديك صور غير محفوظة. هل تريد حقاً مغادرة الصفحة؟';
+    }
+});

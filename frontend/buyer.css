@@ -1451,3 +1451,897 @@ button:focus {
 .btn {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ===== تحسينات الهيدر واللوجو ===== */
+
+/* تصحيح للهواتف الصغيرة جدا */
+@media (max-width: 320px) {
+    .navbar {
+        padding: 8px 0;
+        padding-top: calc(8px + var(--safe-area-top));
+        height: 60px;
+    }
+    
+    .logo-img {
+        width: 50px !important;
+        height: 50px !important;
+        margin: 0 5px !important;
+    }
+    
+    .logo-text {
+        font-size: 1rem !important;
+        margin: 0 !important;
+    }
+}
+
+/* للهواتف المتوسطة */
+@media (max-width: 480px) {
+    .navbar {
+        height: 70px;
+    }
+    
+    .nav-brand {
+        flex: 0 1 auto; /* لا يتمدد بشكل مفرط */
+        min-width: 120px; /* عرض أدنى */
+    }
+    
+    .logo {
+        gap: 5px; /* تقليل المسافة بين الشعار والنص */
+    }
+    
+    .logo-img {
+        width: 60px !important;
+        height: 60px !important;
+        margin: 0 8px !important;
+    }
+    
+    .logo-text {
+        font-size: 1.1rem !important;
+        white-space: normal !important;
+        line-height: 1.2;
+        max-width: 100px;
+    }
+    
+    .nav-links {
+        gap: 5px;
+        flex: 1;
+        justify-content: flex-end;
+    }
+    
+    .nav-link {
+        padding: 6px 8px;
+        font-size: 0.8rem;
+        min-width: auto;
+    }
+    
+    .nav-text {
+        display: none; /* إخفاء النص في الهواتف الصغيرة */
+    }
+    
+    .nav-link i {
+        font-size: 1.1rem;
+        margin: 0;
+    }
+    
+    .cart-count {
+        top: -5px;
+        left: -5px;
+        width: 16px;
+        height: 16px;
+        font-size: 0.7rem;
+    }
+}
+
+/* ===== تحسينات صور المنتجات ===== */
+
+.product-image {
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    overflow: hidden;
+    cursor: pointer;
+    position: relative;
+    padding: 10px; /* إضافة padding */
+}
+
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* تغيير من cover إلى contain */
+    transition: var(--transition);
+    max-width: 90%; /* لا تتعدى 90% من العرض */
+    max-height: 90%; /* لا تتعدى 90% من الارتفاع */
+    background: white;
+    border-radius: 4px;
+    padding: 5px;
+}
+
+/* للهواتف الصغيرة */
+@media (max-width: 360px) {
+    .product-image {
+        height: 180px;
+        padding: 8px;
+    }
+    
+    .product-image img {
+        max-width: 85%;
+        max-height: 85%;
+    }
+}
+
+/* للأجهزة اللوحية والهواتف الكبيرة */
+@media (min-width: 768px) {
+    .product-image {
+        height: 250px;
+    }
+    
+    .product-image img {
+        object-fit: cover; /* العودة إلى cover للشاشات الكبيرة */
+        max-width: 100%;
+        max-height: 100%;
+    }
+}
+
+/* ===== إضافة قائمة هامبرجر للهواتف الصغيرة ===== */
+
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--primary-blue);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: var(--radius);
+    transition: var(--transition);
+    margin-right: 10px;
+}
+
+.menu-toggle:hover {
+    background: rgba(52, 152, 219, 0.1);
+}
+
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+        order: -1;
+    }
+    
+    .nav-links {
+        position: fixed;
+        top: 70px;
+        right: -100%;
+        width: 250px;
+        height: calc(100vh - 70px);
+        background: white;
+        flex-direction: column;
+        padding: 20px;
+        transition: var(--transition);
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        align-items: flex-start;
+    }
+    
+    .nav-links.active {
+        right: 0;
+    }
+    
+    .nav-link {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 12px 15px;
+        font-size: 1rem;
+    }
+    
+    .nav-text {
+        display: inline !important;
+        margin-right: 10px;
+    }
+}
+
+/* ===== إضافة تظليل خلف القائمة عند فتحها ===== */
+
+.nav-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.nav-overlay.active {
+    display: block;
+}
+
+/* ===== تحسينات إضافية للهواتف ===== */
+
+/* منع التكبير في حقول الإدخال */
+input, select, textarea {
+    font-size: 16px !important;
+    max-height: 44px;
+}
+
+/* تحسين الأحجام للأصابع */
+.btn, .nav-link, .category-card {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* تحسين التباعد في الهواتف الصغيرة */
+@media (max-width: 480px) {
+    .container {
+        padding: 0 12px;
+    }
+    
+    .hero-content h2 {
+        font-size: 1.5rem;
+        line-height: 1.3;
+    }
+    
+    .hero-content p {
+        font-size: 0.95rem;
+        line-height: 1.4;
+    }
+    
+    .categories-grid {
+        gap: 10px;
+    }
+    
+    .category-card {
+        min-height: 90px;
+        padding: 15px 8px;
+    }
+}
+
+/* تحسين المرونة */
+.nav-brand {
+    flex-shrink: 1;
+    overflow: hidden;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.logo-img {
+    width: 70px;
+    height: 70px;
+    border-radius: 30%;
+    background-color: var(--accent-yellow);
+    border: 2px solid var(--accent-yellow);
+    flex-shrink: 0;
+    object-fit: cover;
+}
+
+.logo-text {
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: var(--accent-yellow);
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+/* تحسين صور المنتجات */
+.discount-badge,
+.out-of-stock-badge {
+    z-index: 2; /* تأكد من ظهور البادجات فوق الصور */
+}
+
+
+/* إضافة في نهاية الملف */
+
+/* Success Message Styles */
+.success-message-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+}
+
+.success-message-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.success-message-box {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    max-width: 90%;
+    width: 400px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    transform: translateY(30px);
+    transition: transform 0.4s ease;
+}
+
+.success-message-overlay.active .success-message-box {
+    transform: translateY(0);
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: #2ecc71;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    animation: scaleIn 0.5s ease 0.2s both;
+}
+
+.success-icon i {
+    font-size: 40px;
+    color: white;
+    animation: checkmark 0.5s ease 0.4s both;
+}
+
+@keyframes scaleIn {
+    0% {
+        transform: scale(0);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes checkmark {
+    0% {
+        transform: scale(0) rotate(-45deg);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+
+.success-message-box h3 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 15px;
+    font-weight: 700;
+    animation: fadeInUp 0.5s ease 0.6s both;
+}
+
+.success-message-box p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+    animation: fadeInUp 0.5s ease 0.8s both;
+}
+
+.success-details {
+    background: #f8f9fa;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 25px;
+    text-align: right;
+    animation: fadeInUp 0.5s ease 1s both;
+}
+
+.success-details .detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 15px;
+}
+
+.success-details .detail-item:last-child {
+    margin-bottom: 0;
+}
+
+.success-details .detail-item strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.success-details .detail-item.order-id {
+    background: rgba(52, 152, 219, 0.1);
+    padding: 8px 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+    color: #3498db;
+    font-weight: bold;
+}
+
+.success-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    animation: fadeInUp 0.5s ease 1.2s both;
+}
+
+.success-actions .btn {
+    min-width: 120px;
+}
+
+.success-actions .btn-success {
+    background: #2ecc71;
+    color: white;
+    border: none;
+}
+
+.success-actions .btn-success:hover {
+    background: #27ae60;
+    transform: translateY(-2px);
+}
+
+.success-actions .btn-outline {
+    background: white;
+    color: #3498db;
+    border: 2px solid #3498db;
+}
+
+.success-actions .btn-outline:hover {
+    background: #3498db;
+    color: white;
+}
+
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Animation for confetti */
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #f1c40f;
+    border-radius: 50%;
+    animation: fall 2s ease-in forwards;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* تحسينات للهواتف */
+@media (max-width: 768px) {
+    .success-message-box {
+        width: 90%;
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .success-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .success-icon i {
+        font-size: 35px;
+    }
+    
+    .success-message-box h3 {
+        font-size: 20px;
+    }
+    
+    .success-message-box p {
+        font-size: 15px;
+    }
+    
+    .success-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .success-actions .btn {
+        width: 100%;
+    }
+}
+
+/* تحسينات للهواتف الصغيرة جدًا */
+@media (max-width: 360px) {
+    .success-message-box {
+        padding: 25px 15px;
+    }
+    
+    .success-icon {
+        width: 60px;
+        height: 60px;
+        margin-bottom: 20px;
+    }
+    
+    .success-icon i {
+        font-size: 30px;
+    }
+    
+    .success-message-box h3 {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+    
+    .success-message-box p {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+    
+    .success-details {
+        padding: 15px;
+        font-size: 14px;
+    }
+}
+
+
+/* Success Message Styles - إضافة في نهاية الملف */
+.success-message-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.success-message-box {
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    border-radius: 20px;
+    padding: 40px 30px;
+    text-align: center;
+    max-width: 90%;
+    width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    border: 2px solid #2ecc71;
+    animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.success-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 25px;
+    animation: scaleIn 0.5s ease 0.2s both;
+}
+
+.success-icon i {
+    font-size: 40px;
+    color: white;
+}
+
+@keyframes scaleIn {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.success-message-box h3 {
+    color: #2c3e50;
+    font-size: 24px;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.success-message-box p {
+    color: #666;
+    font-size: 16px;
+    line-height: 1.6;
+    margin-bottom: 25px;
+}
+
+.success-details {
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    text-align: right;
+    border-right: 4px solid #3498db;
+}
+
+.success-details .detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.success-details .detail-item:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+.success-details .detail-item strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
+.success-details .detail-item span {
+    color: #3498db;
+    font-weight: 500;
+}
+
+.success-actions {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.success-actions .btn {
+    min-width: 140px;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    border: none;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #27ae60, #219653);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.3);
+}
+
+/* الكونفيتي */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    animation: fall 2s linear forwards;
+    z-index: 10000;
+}
+
+@keyframes fall {
+    0% {
+        transform: translateY(-100px) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* تحسينات للهواتف */
+@media (max-width: 768px) {
+    .success-message-box {
+        width: 90%;
+        padding: 30px 20px;
+        margin: 20px;
+    }
+    
+    .success-icon {
+        width: 70px;
+        height: 70px;
+    }
+    
+    .success-icon i {
+        font-size: 35px;
+    }
+    
+    .success-message-box h3 {
+        font-size: 20px;
+    }
+    
+    .success-message-box p {
+        font-size: 15px;
+    }
+    
+    .success-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .success-actions .btn {
+        width: 100%;
+    }
+}
+
+/* رسالة نجاح الطلب */
+.order-success-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.order-success-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.order-success-modal {
+    background: white;
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.success-icon {
+    font-size: 60px;
+    color: #2ecc71;
+    margin-bottom: 20px;
+}
+
+.success-icon i {
+    animation: iconBounce 0.6s ease;
+}
+
+@keyframes iconBounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
+}
+
+.order-success-modal h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-size: 1.5em;
+}
+
+.order-success-modal p {
+    color: #666;
+    margin-bottom: 25px;
+    line-height: 1.5;
+}
+
+.order-details {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    text-align: right;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #ddd;
+}
+
+.detail-item:last-child {
+    border-bottom: none;
+}
+
+.detail-item strong {
+    color: #2c3e50;
+}
+
+.detail-item span {
+    color: #666;
+}
+
+.status-pending {
+    color: #f39c12;
+    background: #fef5e7;
+    padding: 3px 10px;
+    border-radius: 15px;
+    font-size: 0.9em;
+}
+
+.success-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.success-actions .btn {
+    padding: 12px 25px;
+    font-size: 1em;
+}
+
+/* تأثير الكونفيتي */
+.confetti {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    background: #f1c40f;
+    top: 0;
+    opacity: 0;
+    animation: confettiFall 2s linear forwards;
+}
+
+@keyframes confettiFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+    }
+}

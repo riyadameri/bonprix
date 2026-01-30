@@ -10,25 +10,31 @@
 </head>
 <body>
     <!-- شريط التنقل -->
-    <nav class="navbar">
-        <div class="container">
-            <div class="nav-brand">
-                <a href="#" class="logo">
-                    <img src="assets/bonPrix.jpg" alt="" style="width: 80px; height: 80px; border-radius: 30%; background-color: rgb(255, 217, 2); border: 2px solid rgb(255, 217, 2); margin-right: 10px; margin-left: 10px; margin-top: 30px;">
-                    <h1 style=" font-weight: bold; color: rgb(255, 217, 2); font-optical-sizing: auto ; font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;">BonPrix</h1>
-                </a>
-            </div>
-            <div class="nav-links">
-                <a href="#" class="nav-link active"><i class="fas fa-home"></i> الرئيسية</a>
-                <a href="#products" class="nav-link"><i class="fas fa-box"></i> المنتجات</a>
-                <a href="#cart" class="nav-link cart-link">
-                    <i class="fas fa-shopping-cart"></i>
-                    سلة المشتريات
-                    <span class="cart-count">0</span>
-                </a>
-            </div>
+<!-- في قسم الهيدر -->
+<nav class="navbar">
+    <div class="container">
+        <div class="nav-brand">
+            <a href="#" class="logo">
+                <!-- تقليل حجم الشعار للهواتف -->
+                <img src="assets/bonPrix.jpg" alt="BonPrix Logo" class="logo-img">
+                <!-- إضافة نسخة نصية للشعار للهواتف الصغيرة -->
+                <h1 class="logo-text">BonPrix</h1>
+            </a>
         </div>
-    </nav>
+        <button class="menu-toggle" aria-label="فتح القائمة">
+            <i class="fas fa-bars"></i>
+        </button>
+        <div class="nav-links">
+            <a href="#" class="nav-link active"><i class="fas fa-home"></i> <span class="nav-text">الرئيسية</span></a>
+            <a href="#products" class="nav-link"><i class="fas fa-box"></i> <span class="nav-text">المنتجات</span></a>
+            <a href="#cart" class="nav-link cart-link">
+                <i class="fas fa-shopping-cart"></i>
+                <span class="nav-text">السلة</span>
+                <span class="cart-count">0</span>
+            </a>
+        </div>
+    </div>
+</nav>
 
     <!-- الهيرو -->
     <section class="hero">
@@ -224,7 +230,19 @@
             </div>
         </div>
     </footer>
-
+    <!-- في buyer.html بعد opening <body> tag -->
+<div id="orderSuccessBanner" style="display: none;"></div>
+<!-- بانر نجاح الطلب -->
     <script src="buyer.js"></script>
 </body>
+<!-- رسالة نجاح الطلب -->
+<div id="orderSuccessMessage" class="order-success-banner" style="display: none;">
+    <i class="fas fa-check-circle"></i>
+    <h3>تم تأكيد طلبك بنجاح!</h3>
+    <p>سيتم التواصل معك قريباً لتأكيد التفاصيل والتوصيل.</p>
+    <a href="orders.html" class="btn btn-light" style="margin-top: 15px; background: white; color: #27ae60;">
+        <i class="fas fa-clipboard-list"></i> عرض طلباتي
+    </a>
+
+</div>
 </html>

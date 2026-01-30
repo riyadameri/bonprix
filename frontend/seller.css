@@ -1462,3 +1462,136 @@ footer p {
         border: none;
     }
 }
+
+/* بانر نجاح الطلب */
+.order-success-banner {
+    position: fixed;
+    top: 80px;
+    left: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 10px;
+    z-index: 9998;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+    animation: slideDown 0.5s ease;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.order-success-banner strong {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.order-success-banner p {
+    margin: 5px 0 0;
+    font-size: 0.9em;
+    opacity: 0.9;
+}
+
+.order-success-banner button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    transition: opacity 0.3s ease;
+}
+
+.order-success-banner button:hover {
+    opacity: 0.8;
+}
+
+/* تحسينات للهواتف */
+@media (max-width: 768px) {
+    .order-success-banner {
+        top: 70px;
+        left: 15px;
+        right: 15px;
+        padding: 12px 15px;
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+    
+    .order-success-banner button {
+        align-self: flex-end;
+        margin-top: -10px;
+    }
+}
+
+/* حاوية رسالة النجاح في الصفحة الرئيسية */
+#orderSuccessMessage {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    padding: 20px;
+    border-radius: var(--radius);
+    margin: 20px 0;
+    text-align: center;
+    animation: slideInDown 0.5s ease;
+    box-shadow: 0 4px 15px rgba(46, 204, 113, 0.3);
+}
+
+#orderSuccessMessage i {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+#orderSuccessMessage h3 {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+#orderSuccessMessage p {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-bottom: 15px;
+}
+
+#orderSuccessMessage .btn-light {
+    background: white;
+    color: #27ae60;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+}
+
+#orderSuccessMessage .btn-light:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(255, 255, 255, 0.2);
+}
+
+@keyframes slideInDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
